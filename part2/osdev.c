@@ -62,7 +62,7 @@ void terminal_initialize()
 {
 	terminal_row = 0;
 	terminal_column = 0;
-	terminal_color = make_color(COLOR_LIGHT_GREY, COLOR_BLACK);
+	terminal_color = make_color(COLOR_RED, COLOR_WHITE);
 	terminal_buffer = (uint16_t*) 0xB8000;
 	for ( size_t y = 0; y < VGA_HEIGHT; y++ )
 	{
@@ -72,11 +72,6 @@ void terminal_initialize()
 			terminal_buffer[index] = make_vgaentry(' ', terminal_color);
 		}
 	}
-}
- 
-void terminal_setcolor(uint8_t color)
-{
-	terminal_color = color;
 }
  
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
@@ -104,13 +99,9 @@ void terminal_writestring(const char* data)
 	for ( size_t i = 0; i < datalen; i++ )
 		terminal_putchar(data[i]);
 }
- 
-#if defined(__cplusplus)
-extern "C" /* Use C linkage for kernel_main. */
-#endif
 
 void kernel_main()
 {
 	terminal_initialize();
-	terminal_writestring("Hello, kernel World!\n");
+	terminal_writestring("MemOS: Welcome *** System Memory is:\n");
 }

@@ -22,7 +22,11 @@ done_beginning:
 	 movw $0xE801, %ax
 	 int $0x15
 	 addw $1024, %ax
-	 movw %ax ,%cx
+	 shrw $10, %ax
+	 shrw $4, %bx
+	 addw %bx, %ax
+	 # start printing
+	 movw %ax, %cx 
 	 shrw $8, %ax
 	 call print
 	 movw %cx ,%ax
@@ -70,10 +74,7 @@ done_beginning_finish:
 msg: 
 	.asciz "MemOS: Welcome *** System Memory is: 0x"
 msg_finish:
-	.asciz " Bytes.
-
-
+	.asciz " MB."
 	.org 0x1FE
-
 	.byte 0x55
 	.byte 0xAA
