@@ -1,3 +1,8 @@
+.section .bootstrap_stack, "aw", @nobits
+stack_bottom:
+.skip 16384 # 16 KiB
+stack_top:
+
 .section .text
 .global _start
 _start:
@@ -13,3 +18,11 @@ _start:
 real_start: 
 
         # This is where the rest of your program goes
+				movl $stack_top, %esp
+				call kernel_main
+				cli
+				hlt
+.loop:
+			jmp .loop
+
+.size _real_start, . - _real_start

@@ -10,4 +10,17 @@ SECTIONS
 	. = 1M + SIZEOF_HEADERS;
 	. = ALIGN(4K);
 	.text : { *(.text)} :physical
+
+	. = ALIGN(4K);
+	.rodata : { *(.rodata)} :physical
+
+	. = ALIGN(4K);
+	.data : { *(.data)} :physical
+
+	. = ALIGN(4K);
+	.bss : { 
+		*(COMMON)
+		*(.data)
+		*(.bootstrap_stack)
+		} :physical
 }
