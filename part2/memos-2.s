@@ -19,6 +19,7 @@ real_start:
 
         # This is where the rest of your program goes
 				movl $stack_top, %esp
+				pushl %ebx
 				call kernel_main
 				cli
 				hlt
