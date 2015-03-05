@@ -25,35 +25,53 @@ done_beginning:
 	 shrw $10, %ax
 	 shrw $4, %bx
 	 addw %bx, %ax
-	 # start printing
-	 movw %ax, %cx 
-	 shrw $8, %ax
+	 # start printing in decimal
+	 movw $0, %dx 
+	 movw $0, %bx     
+	 movw $10000, %cx
+	 div %cx
+	 cmp $0, %ax
+	 jz 1f
+	 movw $1, %bx
 	 call print
-	 movw %cx ,%ax
+1:	 movw %dx, %ax
+	 movw $1000, %cx
+	 movw $0, %dx 
+	 div %cx
+	 cmp $0, %bx
+	 jnz 6f
+	  cmp $0, %ax
+	 jz 2f
+	 movw $1, %bx
+6:	 call print
+2:	 movw %dx, %ax
+	 movw $100, %cx
+	 movw $0, %dx
+	 div %cx
+	  cmp $0, %bx
+	 jnz 7f
+	  cmp $0, %ax
+	 jz 3f
+	 movw $1, %bx
+7:	 call print
+3:	 movw %dx, %ax
+	 movw $10, %cx
+	 movw $0, %dx
+	 div %cx
+	 cmp $0, %bx
+	 jnz 8f
+	  cmp $0, %ax
+	 jz 3f
+	 movw $1, %bx
+8:	 call print
+3:	 movw %dx, %ax
 	 call print
 	 jmp final
 
 print:	pushw %dx
-	movb %al, %dl
-	shrb $4, %al
-	cmpb $10, %al
-	jge 1f
+	
 	addb $0x30, %al
-	jmp 2f
-1:	addb $55, %al		
-2:	movb $0x0E, %ah
-	movw $0x07, %bx
-	int $0x10
-
-	movb %dl, %al
-	andb $0x0f, %al
-	cmpb $10, %al
-	jge 1f
-	addb $0x30, %al
-	jmp 2f
-1:	addb $55, %al		
-2:	movb $0x0E, %ah
-	movw $0x07, %bx
+	movb $0x0E, %ah
 	int $0x10
 	popw %dx
 	ret
@@ -61,10 +79,10 @@ print:	pushw %dx
 final:
 	# start to print string
 	leaw msg_finish, %si
-char_loop_finish:
+	char_loop_finish:
 	lodsb
- testb %al, %al
- jz done_beginning_finish
+	testb %al, %al
+    jz done_beginning_finish
 	# interrupting for output
 	movb $0x0E, %ah
 	int $0x10
@@ -72,7 +90,7 @@ char_loop_finish:
 done_beginning_finish:
 
 msg: 
-	.asciz "MemOS: Welcome *** System Memory is: 0x"
+	.asciz "MemOS: Welcome *** System Memory is: "
 msg_finish:
 	.asciz " MB."
 	.org 0x1FE
