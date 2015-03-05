@@ -153,5 +153,5 @@ void kernel_main(multiboot_info_t * mbt, unsigned int magic)
 	char buffer[64];
 	itoa((i / 1024 / 1024) + 1, buffer, 10);
 	terminal_writestring(buffer);
-	terminal_writestring("MB.\n");
+	terminal_writestring("MB.");
 }
