@@ -203,6 +203,7 @@ int thread1 (void) {
     for (i = 0; i < 10; i++) {
 
           terminal_writestring("<1>");
+          for(int j=0;j<400000;j++);
         // usleep (100000);
       //fflush (stdout);
     }
@@ -232,6 +233,7 @@ int thread2 (void) {
   while (1) {
     for (i = 0; i < 5; i++) {
           terminal_writestring("<2>");
+          for(int j=0;j<400000;j++);
       //usleep (100000);
       //fflush (stdout);
     }
@@ -257,6 +259,7 @@ int thread3 (void) {
   while (1) {
     for (i = 0; i < 2; i++) {
      terminal_writestring("<3>");
+     for(int j=0;j<400000;j++);
  //     usleep (100000); 	
       //fflush (stdout);
     }
@@ -314,7 +317,21 @@ void schedule (void) {
 void kernel_main(multiboot_info_t * mbt, unsigned int magic)
 {
 	terminal_initialize();
-  int i;
+   terminal_writestring("MemOS: Welcome *** System Memory is:");
+   
+	multiboot_memory_map_t* mmap = mbt->mmap_addr;
+	unsigned long long i = 0;
+	while(mmap < mbt->mmap_addr + mbt->mmap_length) {
+		i += mmap->len;
+		mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
+	}
+	char buffer[64];
+	itoa((i / 1024 / 1024) + 1, buffer, 10);
+	terminal_writestring(buffer);
+	terminal_writestring("MB.");
+     terminal_writestring("\n");
+   for(i=0;i<400000;i++);
+  int j;
   rq *ptr, *pptr;
 
   /* Build a "runqueue" */
@@ -328,10 +345,10 @@ void kernel_main(multiboot_info_t * mbt, unsigned int magic)
   head.prev = NULL;
 
   // Add any additional threads after the first
-  for (i = 1; i < MAX_THREADS; i++) {
+  for (j = 1; j < MAX_THREADS; j++) {
     ptr = (rq *) malloc (sizeof (rq));
 
-    if (i == 1) {
+    if (j == 1) {
       head.next = ptr;
       pptr = &head;
     }
@@ -342,8 +359,8 @@ void kernel_main(multiboot_info_t * mbt, unsigned int magic)
 
     ptr->prev = pptr;
 
-    ptr->task = f[i];
-    ptr->tid = i;
+    ptr->task = f[j];
+    ptr->tid = j;
     ptr->next = &head; // Wraparound
     head.prev = ptr;
   }
