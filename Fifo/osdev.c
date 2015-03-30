@@ -264,7 +264,7 @@ int thread3 (void) {
       //fflush (stdout);
     }
      terminal_writestring("\n");
-    crReturn (2); // Time to yield
+    crReturn (3); // Time to yield
 
     if (++j == 15)
       break;
