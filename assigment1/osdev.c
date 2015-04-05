@@ -1,7 +1,7 @@
 #include "output.h"
 #include "multiboot.h"
 #include "thread.h"
-#include "gdt.h"
+#include "descriptor_table.h"
 
 void init(multiboot_info_t * mbt)
 {

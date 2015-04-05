@@ -1,6 +1,6 @@
 
-#ifndef __H_GDT__
-#define __H_GDT__
+#ifndef __H_TABLE__
+#define __H_TABLE__
 #include "stdint.h"
 
 struct gdt_ptr_struct

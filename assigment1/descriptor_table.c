@@ -1,4 +1,4 @@
-#include "gdt.h"
+#include "descriptor_table.h"
 
 gdt_entry_t gdt_entries[3];
 gdt_ptr_t   gdt_ptr;
