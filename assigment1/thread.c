@@ -21,7 +21,7 @@ static void thread1() {
 	a++;
 	yield();
 	if(a == 4) {
-		prints("here");
+		prints("Thread 1 came back correcty");
 	} else
 		prints("no :(");
 }
@@ -36,7 +36,7 @@ static void thread2() {
 	a++;
 	yield();
 	if(a == 4) {
-		prints("here");
+		prints("Thread 2 came back correcty");
 	} else
 		prints("no :(");
 }
@@ -51,7 +51,7 @@ static void thread3() {
 	a++;
 	yield();
 	if(a == 4) {
-		prints("here");
+		prints("Thread 3 came back correcty");
 	} else
 		prints("no :(");
 }
