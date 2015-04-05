@@ -22,7 +22,7 @@ gdt:
 	.long 0x00CF9200
 
 gdt_ptr:
-	.short 0x7FF
+	.short 0x30
 	.long gdt
 	
 .text
@@ -39,15 +39,15 @@ _start:
 	.long 0xE4524FFB /* Checksum */
 
 real_start:
-	//lgdt gdt_ptr
-	//ljmp $0x8, $1f
+	lgdt gdt_ptr
+	ljmp $0x8, $1f
 1:
-	//movw 0x10, %ax
-	//movw %ax, %ss
-	//movw %ax, %ds
-	//movw %ax, %es
-	//movw %ax, %fs
-	//movw %ax, %gs
+	movw $0x10, %ax
+	movw %ax, %ss
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
 	
 	/* set up stack */
 	movl $stack+0x1000, %esp /* setup 4Kbyte stack */
