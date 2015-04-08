@@ -49,6 +49,6 @@ TCB * pick_next_in_queue(){
 			}
 		}
 	}
-	prints("Run queue emptied");
+	prints("Run queue emptied\n");
 	return NULL;
 }

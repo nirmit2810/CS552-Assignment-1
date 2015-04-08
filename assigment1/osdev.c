@@ -2,14 +2,16 @@
 #include "multiboot.h"
 #include "thread.h"
 #include "descriptor_table.h"
+#include "timer.h"
 
 void init(multiboot_info_t * mbt)
 {
-	init_gdt();
 	
 	terminal_initialize();
+	init_tables();
 
 	init_thread();
+	init_timer();
 	schedule();
 
 }

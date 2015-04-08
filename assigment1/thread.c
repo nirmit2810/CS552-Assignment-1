@@ -11,49 +11,47 @@ static TCB threads[NUM_THREADS];
 static TCB * current_pcb;
 
 
+#define prem 0
+
 static void thread1() {
-	prints("1");
-	int a = 1;
-	a++;
+#if prem == 0
+	prints("1\n");
 	yield();
-	a++;
-	yield();
-	a++;
-	yield();
-	if(a == 4) {
-		prints("Thread 1 came back correcty");
-	} else
-		prints("no :(");
+	prints("Thread 1 's back\n");
+#else
+	while(1){
+		for(int i = 0; i < 4294967; i++);
+		prints("1");
+	}
+#endif
 }
 
 static void thread2() {
-	prints("2");
-	int a = 1;
-	a++;
+#if prem == 0
+	prints("2\n");
 	yield();
-	a++;
-	yield();
-	a++;
-	yield();
-	if(a == 4) {
-		prints("Thread 2 came back correcty");
-	} else
-		prints("no :(");
+	prints("Thread 2 's back\n");
+#else
+	while(1){
+		for(int i = 0; i < 4294967; i++);
+		prints("2");
+	}
+
+#endif
 }
 
 static void thread3() {
-	prints("3");
-	int a = 1;
-	a++;
+#if prem == 0
+	prints("3\n");
 	yield();
-	a++;
-	yield();
-	a++;
-	yield();
-	if(a == 4) {
-		prints("Thread 3 came back correcty");
-	} else
-		prints("no :(");
+	prints("Thread 3 's back\n");
+#else
+	while(1){
+		for(int i = 0; i < 4294967; i++);
+		prints("3");
+	}
+
+#endif
 }
 
 int thread_create( void * stack, void * function) {
@@ -61,8 +59,8 @@ int thread_create( void * stack, void * function) {
 	int pcb_id = -1;
 	pcb_id = get_free_pcb();
 	if( pcb_id == -1) {
-		prints("No avaiable PCB");
-		return -1;
+		prints("No avaiable PCB\n");
+		asm volatile("hlt\n\t");
 	}
 
 	//Setting exist point
@@ -78,7 +76,7 @@ int thread_create( void * stack, void * function) {
 	current_PCB->stack_pointer = (uint32_t) ((uint16_t *)stack - 22);
 
 	*((uint32_t *) stack - 0) = (uint32_t) current_PCB->entry; // ENTRY POINT
-	*((uint32_t *) stack - 1) = 0; // Interrupt
+	*((uint32_t *) stack - 1) = 1 << 9; // Interrupt
 	*((uint32_t *) stack - 2) = 0; // EAX
 	*((uint32_t *) stack - 3) = 0; // ECX
 	*((uint32_t *) stack - 4) = (uint32_t)((uint32_t*) stack - 2); // EBX
@@ -116,7 +114,8 @@ void schedule(){
 	to_pcb = pick_next_in_queue();
 	if(to_pcb == current_pcb) return;
 	if(!to_pcb){
-		prints("All PCB gone");
+		prints("All PCB gone\n");
+		asm volatile("hlt \n\t");
 	}
 	from_pcb = current_pcb;
 	current_pcb = to_pcb;

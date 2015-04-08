@@ -32,7 +32,7 @@ real_start:
 	
 	/* In case we return from the call, we want to suspend the processor */
 	
-	cli
+	//cli
 	hlt
 loop:
 	jmp loop
