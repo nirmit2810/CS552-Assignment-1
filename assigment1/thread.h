@@ -4,6 +4,9 @@
 
 #define NUM_THREADS 3
 #define ESP = 0x0
+
+#define prem 0
+
 typedef enum {
   FALSE,
   TRUE

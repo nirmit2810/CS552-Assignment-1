@@ -11,7 +11,9 @@ void init(multiboot_info_t * mbt)
 	init_tables();
 
 	init_thread();
+#if prem == 1
 	init_timer();
+#endif
 	schedule();
 
 }

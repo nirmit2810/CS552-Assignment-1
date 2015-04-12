@@ -11,7 +11,6 @@ static TCB threads[NUM_THREADS];
 static TCB * current_pcb;
 
 
-#define prem 0
 
 static void thread1() {
 #if prem == 0
@@ -76,7 +75,11 @@ int thread_create( void * stack, void * function) {
 	current_PCB->stack_pointer = (uint32_t) ((uint16_t *)stack - 22);
 
 	*((uint32_t *) stack - 0) = (uint32_t) current_PCB->entry; // ENTRY POINT
+#if prem == 0
+	*((uint32_t *) stack - 1) = 0; // Interrupt
+#else
 	*((uint32_t *) stack - 1) = 1 << 9; // Interrupt
+#endif
 	*((uint32_t *) stack - 2) = 0; // EAX
 	*((uint32_t *) stack - 3) = 0; // ECX
 	*((uint32_t *) stack - 4) = (uint32_t)((uint32_t*) stack - 2); // EBX
