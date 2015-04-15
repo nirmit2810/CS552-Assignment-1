@@ -1,4 +1,5 @@
 #include "output.h"
+#include "helper.h"
  /*
 
  This CODE IS TAKEN DIRECLTY FROM OSDEV.ORG, which was recommended by Professor West.
@@ -49,32 +50,56 @@ void terminal_initialize()
 		}
 	}
 }
+  void update_cursor(int row, int col)
+ {
+    unsigned short position=(row*80) + col;
+ 
+    // cursor LOW port to vga INDEX register
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (unsigned char)(position&0xFF));
+    // cursor HIGH port to vga INDEX register
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (unsigned char )((position>>8)&0xFF));
+ }
  
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 {
-	const size_t index = y * VGA_WIDTH + x;
+	 size_t index = y * VGA_WIDTH + x;
+	if(index >= VGA_HEIGHT*VGA_WIDTH){
+	    
+		
+		for(int i=0;i<VGA_WIDTH*(VGA_HEIGHT-1);i++){
+		 terminal_buffer[i]=terminal_buffer[i+VGA_WIDTH];
+		}
+		for(int i=VGA_WIDTH*(VGA_HEIGHT-1) ; i<VGA_WIDTH*VGA_HEIGHT;i++)
+		{
+	     terminal_buffer[i]= make_vgaentry(' ', terminal_color);
+		}
+		terminal_row--;
+		index=index- VGA_WIDTH;
+	}
+			
 	terminal_buffer[index] = make_vgaentry(c, color);
+	
 }
  
 void terminal_putchar(char c)
-{
-	if (c == '\n') {
+
+{   if(c=='\n'){
+    ++terminal_row;
+    terminal_column=0;
+}else{
+	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+	if ( ++terminal_column == VGA_WIDTH )
+	{
 		terminal_column = 0;
-			if ( ++terminal_row == VGA_HEIGHT )
-			{
-				terminal_row = 0;
-			}
-	} else {
-		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-		if ( ++terminal_column == VGA_WIDTH )
-		{
-			terminal_column = 0;
-			if ( ++terminal_row == VGA_HEIGHT )
-			{
-				terminal_row = 0;
-			}
-		}
+		++terminal_row;
+		
 	}
+	
+}
+
+update_cursor(terminal_row,terminal_column);
 }
  
 void terminal_writestring(const char* data)

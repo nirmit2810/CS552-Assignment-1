@@ -9,9 +9,10 @@ static uint32_t stack3[1024] __attribute__ ((aligned (0x1000)));
 static TCB threads[NUM_THREADS];
 
 static TCB * current_pcb;
-
-
-
+int a=0;
+int x, y ,z=0;
+int check1=0;
+int p[3]={3,0,2};
 static void thread1() {
 #if prem == 0
 	prints("1\n");
@@ -19,8 +20,13 @@ static void thread1() {
 	prints("Thread 1 's back\n");
 #else
 	while(1){
-		for(int i = 0; i < 4294967; i++);
+		for(int i = 0; i < 494967; i++);
 		prints("1");
+		x++;
+		if(x==1000){
+		 prints("\nThread 1 is completed.\n");
+		break;
+	}
 	}
 #endif
 }
@@ -32,8 +38,13 @@ static void thread2() {
 	prints("Thread 2 's back\n");
 #else
 	while(1){
-		for(int i = 0; i < 4294967; i++);
+		for(int i = 0; i < 494967; i++);
 		prints("2");
+		y++;
+		if(y==600){
+	    prints("\nThread 2 is completed.\n");
+		break;
+	}
 	}
 
 #endif
@@ -46,8 +57,13 @@ static void thread3() {
 	prints("Thread 3 's back\n");
 #else
 	while(1){
-		for(int i = 0; i < 4294967; i++);
+		for(int i = 0; i < 494967; i++);
 		prints("3");
+		z++;
+		if(z==800){
+		 prints("\nThread 3 is completed.\n");
+		break;
+	}
 	}
 
 #endif
@@ -62,7 +78,7 @@ int thread_create( void * stack, void * function) {
 		asm volatile("hlt\n\t");
 	}
 
-	//Setting exist point
+	//Setting exit point
 	*((uint32_t *)stack) = (uint32_t) exit_thread;
 	// Shifting stack pointer
 	stack = (void *)((uint32_t *)stack - 1);
@@ -71,6 +87,8 @@ int thread_create( void * stack, void * function) {
 	current_PCB->thread_id = pcb_id;
 	current_PCB->assigned = TRUE;
 	current_PCB->entry = function;
+	current_PCB->priority=p[a];
+	a++;
 	// The first 22 * 2 bytes for register states
 	current_PCB->stack_pointer = (uint32_t) ((uint16_t *)stack - 22);
 
@@ -90,8 +108,12 @@ int thread_create( void * stack, void * function) {
 	*((uint32_t *) stack - 9) = 0x10; // ES
 	*((uint32_t *) stack - 10) = 0x10; // FS
 	*((uint32_t *) stack - 11) = 0x10; // GS
-
+     *((uint32_t *) stack - 12)= ( uint32_t) current_PCB->priority;
+     
 	add_to_queue(current_PCB);
+#if dyn==1
+    priority_queue();
+#endif   
 }
 
 void init_thread(void){
@@ -117,7 +139,10 @@ void schedule(){
 	to_pcb = pick_next_in_queue();
 	if(to_pcb == current_pcb) return;
 	if(!to_pcb){
+		if(check1==0){
+		check1=1;
 		prints("All PCB gone\n");
+	}
 		asm volatile("hlt \n\t");
 	}
 	from_pcb = current_pcb;

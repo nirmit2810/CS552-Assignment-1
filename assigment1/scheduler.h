@@ -38,5 +38,6 @@ void add_to_queue(TCB * tcb);
 
 void remove_from_queue(TCB * tcb);
 
+void priority_queue();
 TCB * pick_next_in_queue();
 #endif
