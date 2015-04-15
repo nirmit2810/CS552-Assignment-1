@@ -11,14 +11,14 @@ uint8_t make_color(enum vga_color fg, enum vga_color bg)
 {
 	return fg | bg << 4;
 }
- 
+
 uint16_t make_vgaentry(char c, uint8_t color)
 {
 	uint16_t c16 = c;
 	uint16_t color16 = color;
 	return c16 | color16 << 8;
 }
- 
+
 size_t strlen(const char* str)
 {
 	size_t ret = 0;
@@ -26,15 +26,15 @@ size_t strlen(const char* str)
 		ret++;
 	return ret;
 }
- 
- 
+
+
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
- 
+
 void terminal_initialize()
 {
 	terminal_row = 0;
@@ -53,7 +53,7 @@ void terminal_initialize()
   void update_cursor(int row, int col)
  {
     unsigned short position=(row*80) + col;
- 
+
     // cursor LOW port to vga INDEX register
     outb(0x3D4, 0x0F);
     outb(0x3D5, (unsigned char)(position&0xFF));
@@ -61,13 +61,13 @@ void terminal_initialize()
     outb(0x3D4, 0x0E);
     outb(0x3D5, (unsigned char )((position>>8)&0xFF));
  }
- 
+
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 {
 	 size_t index = y * VGA_WIDTH + x;
 	if(index >= VGA_HEIGHT*VGA_WIDTH){
-	    
-		
+
+
 		for(int i=0;i<VGA_WIDTH*(VGA_HEIGHT-1);i++){
 		 terminal_buffer[i]=terminal_buffer[i+VGA_WIDTH];
 		}
@@ -78,11 +78,11 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 		terminal_row--;
 		index=index- VGA_WIDTH;
 	}
-			
+
 	terminal_buffer[index] = make_vgaentry(c, color);
-	
+
 }
- 
+
 void terminal_putchar(char c)
 
 {   if(c=='\n'){
@@ -94,14 +94,17 @@ void terminal_putchar(char c)
 	{
 		terminal_column = 0;
 		++terminal_row;
-		
-	}
-	
-}
 
+	}
+
+}
+size_t index = terminal_row* VGA_WIDTH + terminal_column;
+    if(index < VGA_HEIGHT*VGA_WIDTH){
 update_cursor(terminal_row,terminal_column);
 }
- 
+
+}
+
 void terminal_writestring(const char* data)
 {
 	size_t datalen = strlen(data);
