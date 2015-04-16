@@ -6,6 +6,7 @@
 #define ESP = 0x0
 
 #define prem 1
+#define dyn  0
 
 typedef enum {
   FALSE,
@@ -16,6 +17,7 @@ typedef struct thread_control_block_st {
 	uint32_t stack_pointer;
 	uint32_t thread_id;
 	uint32_t * entry;
+	uint32_t priority;
 	bool assigned;
 } TCB;
 
