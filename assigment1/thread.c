@@ -9,11 +9,11 @@ static uint32_t stack3[1024] __attribute__ ((aligned (0x1000)));
 static TCB threads[NUM_THREADS];
 
 static TCB * current_pcb;
-int a=0;
-int x, y ,z=0;
-int check1=0;
-int p[3]={3,0,2};
+//priority
+int p[3]={3,2,1};
+
 static void thread1() {
+	int x = 0;
 #if prem == 0
 	prints("1\n");
 	yield();
@@ -24,14 +24,15 @@ static void thread1() {
 		prints("1");
 		x++;
 		if(x==1000){
-		 prints("\nThread 1 is completed.\n");
-		break;
-	}
+			prints("\nThread 1 is completed.\n");
+			break;
+		}
 	}
 #endif
 }
 
 static void thread2() {
+	int y = 0;
 #if prem == 0
 	prints("2\n");
 	yield();
@@ -43,14 +44,15 @@ static void thread2() {
 		y++;
 		if(y==600){
 	    prints("\nThread 2 is completed.\n");
-		break;
-	}
+			break;
+		}
 	}
 
 #endif
 }
 
 static void thread3() {
+	int z = 0;
 #if prem == 0
 	prints("3\n");
 	yield();
@@ -61,15 +63,15 @@ static void thread3() {
 		prints("3");
 		z++;
 		if(z==800){
-		 prints("\nThread 3 is completed.\n");
-		break;
-	}
+			prints("\nThread 3 is completed.\n");
+			break;
+		}
 	}
 
 #endif
 }
 
-int thread_create( void * stack, void * function) {
+int thread_create( void * stack, void * function, int priority) {
 	//Input end of thread
 	int pcb_id = -1;
 	pcb_id = get_free_pcb();
@@ -87,8 +89,7 @@ int thread_create( void * stack, void * function) {
 	current_PCB->thread_id = pcb_id;
 	current_PCB->assigned = TRUE;
 	current_PCB->entry = function;
-	current_PCB->priority=p[a];
-	a++;
+	current_PCB->priority = priority;
 	// The first 22 * 2 bytes for register states
 	current_PCB->stack_pointer = (uint32_t) ((uint16_t *)stack - 22);
 
@@ -117,9 +118,9 @@ int thread_create( void * stack, void * function) {
 }
 
 void init_thread(void){
-	thread_create(&stack1[1023], thread1);
-	thread_create(&stack2[1023], thread2);
-	thread_create(&stack3[1023], thread3);
+	thread_create(&stack1[1023], thread1, p[0]);
+	thread_create(&stack2[1023], thread2, p[1]);
+	thread_create(&stack3[1023], thread3, p[2]);
 }
 
 void yield(void) {
@@ -139,10 +140,8 @@ void schedule(){
 	to_pcb = pick_next_in_queue();
 	if(to_pcb == current_pcb) return;
 	if(!to_pcb){
-		if(check1==0){
-		check1=1;
 		prints("All PCB gone\n");
-	}
+		asm volatile("cli \n\t");
 		asm volatile("hlt \n\t");
 	}
 	from_pcb = current_pcb;

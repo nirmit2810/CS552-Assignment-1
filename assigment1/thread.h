@@ -6,7 +6,7 @@
 #define ESP = 0x0
 
 #define prem 1                                       // prem 1 enables the preemptive version
-#define dyn  0		                            //  dyn 1 enables static scheduling policy
+#define dyn  1		                            //  dyn 1 enables static scheduling policy
 
 typedef enum {
   FALSE,
@@ -21,7 +21,7 @@ typedef struct thread_control_block_st {
 	bool assigned;
 } TCB;					//Define the TCB 
 
-int thread_create( void * stack, void * function); //Creates the thread
+int thread_create( void * stack, void * function, int priority); //Creates the thread
 
 int get_free_pcb();                         //Find the available control block
 
