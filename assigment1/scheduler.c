@@ -7,6 +7,7 @@ static int current_index = -1;
 int check=0;
 int j=0;
 int prior[NUM_THREADS][2];
+
 void add_to_queue(TCB * tcb){
 	int i;
 	for(i = 0; i < NUM_THREADS; i ++) {

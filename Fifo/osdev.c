@@ -201,15 +201,12 @@ int thread1 (void) {
   crBegin;
   while (1) {
     for (i = 0; i < 10; i++) {
-
-          terminal_writestring("<1>");
-          for(int j=0;j<400000;j++);
-        // usleep (100000);
-      //fflush (stdout);
+			terminal_writestring("<1>");
+			for(int j=0;j<400000;j++);
     }
    
-     terminal_writestring("\n");
-    crReturn (1); // Let's cooperate and yield
+    terminal_writestring("\n");
+		crReturn (1); // Let's cooperate and yield
      
     if (++j == 6)
       break;
@@ -218,7 +215,7 @@ int thread1 (void) {
 
 
     terminal_writestring("Done <1>! \n");
-  crFinish;
+		crFinish;
 
   return 1;
 }
@@ -234,8 +231,6 @@ int thread2 (void) {
     for (i = 0; i < 5; i++) {
           terminal_writestring("<2>");
           for(int j=0;j<400000;j++);
-      //usleep (100000);
-      //fflush (stdout);
     }
      terminal_writestring("\n");
     crReturn (2); // Time to yield
@@ -260,8 +255,6 @@ int thread3 (void) {
     for (i = 0; i < 2; i++) {
      terminal_writestring("<3>");
      for(int j=0;j<400000;j++);
- //     usleep (100000); 	
-      //fflush (stdout);
     }
      terminal_writestring("\n");
     crReturn (3); // Time to yield
@@ -271,7 +264,7 @@ int thread3 (void) {
   }
   done[2] = TRUE;
 
-terminal_writestring("Done <3>! \n");
+	terminal_writestring("Done <3>! \n");
   crFinish;
 
   return 3;
@@ -319,18 +312,7 @@ void kernel_main(multiboot_info_t * mbt, unsigned int magic)
 	terminal_initialize();
    terminal_writestring("MemOS: Welcome *** System Memory is:");
    
-	multiboot_memory_map_t* mmap = mbt->mmap_addr;
-	unsigned long long i = 0;
-	while(mmap < mbt->mmap_addr + mbt->mmap_length) {
-		i += mmap->len;
-		mmap = (multiboot_memory_map_t*) ( (unsigned int)mmap + mmap->size + sizeof(unsigned int) );
-	}
-	char buffer[64];
-	itoa((i / 1024 / 1024) + 1, buffer, 10);
-	terminal_writestring(buffer);
-	terminal_writestring("MB.");
-     terminal_writestring("\n");
-   for(i=0;i<400000;i++);
+  for(int i=0;i<400000;i++);
   int j;
   rq *ptr, *pptr;
 
@@ -371,6 +353,3 @@ void kernel_main(multiboot_info_t * mbt, unsigned int magic)
   terminal_writestring("Done 1, 2, 3! \n");
 
 }
-
-
-

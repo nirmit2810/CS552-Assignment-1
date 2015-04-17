@@ -32,6 +32,7 @@ void terminal_initialize();
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y);
 void terminal_putchar(char c);
 void terminal_writestring(const char* data);
+void update_cursor(int row, int col);
 char * itoa( multiboot_uint32_t value, char * str, int base );
 
 void prints(const char * str);
