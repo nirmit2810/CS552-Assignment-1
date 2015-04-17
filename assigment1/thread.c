@@ -12,7 +12,7 @@ static TCB * current_pcb;
 int a=0;
 int x, y ,z=0;
 int check1=0;
-int p[3]={3,0,2};
+int p[3]={7,1,2};
 static void thread1() {
 #if prem == 0
 	prints("1\n");
@@ -60,7 +60,7 @@ static void thread3() {
 		for(int i = 0; i < 494967; i++);
 		prints("3");
 		z++;
-		if(z==800){
+		if(z==830){
 		 prints("\nThread 3 is completed.\n");
 		break;
 	}

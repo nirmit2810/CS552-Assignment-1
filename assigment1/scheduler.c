@@ -65,12 +65,21 @@ TCB * pick_next_in_queue(){
 			}
 		}
 	} else {
+#if  dyn==1
+        for(int i = current_index ; i < NUM_THREADS; i ++) {
+			if(run_queue[i] != NULL){
+				current_index = i;
+				return run_queue[i];
+			}
+		}
+#else		
 		for(int i = current_index + 1; i < NUM_THREADS; i ++) {
 			if(run_queue[i] != NULL){
 				current_index = i;
 				return run_queue[i];
 			}
 		}
+#endif		
 		for(int i = 0; i <= current_index; i++) {
 			if(run_queue[i] != NULL){
 				current_index = i;
