@@ -62,7 +62,7 @@ static void thread3() {
 		for(int i = 0; i < 494967; i++);
 		prints("3");
 		z++;
-		if(z==800){
+		if(z==830){
 			prints("\nThread 3 is completed.\n");
 			break;
 		}
