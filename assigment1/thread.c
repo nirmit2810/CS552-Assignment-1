@@ -5,12 +5,13 @@
 static uint32_t stack1[1024] __attribute__ ((aligned (0x1000)));
 static uint32_t stack2[1024] __attribute__ ((aligned (0x1000)));
 static uint32_t stack3[1024] __attribute__ ((aligned (0x1000)));
+static uint32_t stack4[1024] __attribute__ ((aligned (0x1000)));
 
 static TCB threads[NUM_THREADS];
 
 static TCB * current_pcb;
 //priority
-int p[3]={3,2,1};
+int p[4]={2,3,3,0};
 
 static void thread1() {
 	int x = 0;
@@ -70,7 +71,25 @@ static void thread3() {
 
 #endif
 }
+static void thread4() {
+	int z = 0;
+#if prem == 0
+	prints("4\n");
+	yield();
+	prints("Thread 4 's back\n");
+#else
+	while(1){
+		for(int i = 0; i < 494967; i++);
+		prints("4");
+		z++;
+		if(z==530){
+			prints("\nThread 4 is completed.\n");
+			break;
+		}
+	}
 
+#endif
+}
 int thread_create( void * stack, void * function, int priority) {
 	//Input end of thread
 	int pcb_id = -1;
@@ -89,7 +108,8 @@ int thread_create( void * stack, void * function, int priority) {
 	current_PCB->thread_id = pcb_id;
 	current_PCB->assigned = TRUE;
 	current_PCB->entry = function;
-	current_PCB->priority = priority;
+	current_PCB->priority[0] = priority;
+	current_PCB->priority[1] = 0;
 	// The first 22 * 2 bytes for register states
 	current_PCB->stack_pointer = (uint32_t) ((uint16_t *)stack - 22);
 
@@ -109,7 +129,10 @@ int thread_create( void * stack, void * function, int priority) {
 	*((uint32_t *) stack - 9) = 0x10; // ES
 	*((uint32_t *) stack - 10) = 0x10; // FS
 	*((uint32_t *) stack - 11) = 0x10; // GS
-     *((uint32_t *) stack - 12)= ( uint32_t) current_PCB->priority;
+     *((uint32_t *) stack - 12)= ( uint32_t) current_PCB->priority[0];
+     *((uint32_t *) stack - 12)= ( uint32_t) current_PCB->priority[1];
+     
+     
      
 	add_to_queue(current_PCB);
 #if dyn==1
@@ -121,6 +144,7 @@ void init_thread(void){
 	thread_create(&stack1[1023], thread1, p[0]);
 	thread_create(&stack2[1023], thread2, p[1]);
 	thread_create(&stack3[1023], thread3, p[2]);
+	thread_create(&stack4[1023], thread4, p[3]);
 }
 
 void yield(void) {

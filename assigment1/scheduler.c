@@ -13,7 +13,7 @@ void add_to_queue(TCB * tcb){
 	for(i = 0; i < NUM_THREADS; i ++) {
 		if(run_queue[i] == NULL){
 			prior[j][0]= i;
-			prior[j][1]= tcb->priority;
+			prior[j][1]= tcb->priority[0];
 			run_queue[i] = tcb;
 		    j++;
 			return;
@@ -41,7 +41,14 @@ void priority_queue( ){
 					prior_queue= run_queue[prior[x][0]];
 					run_queue[prior[x][0]]=run_queue[prior[n][0]];
 					run_queue[prior[n][0]]=prior_queue;
-                }
+                }else if(prior[x][1]==prior[n][1])
+                {	run_queue[prior[x][0]]->priority[1]= 1;
+					run_queue[prior[n][0]]->priority[1]=1 ; 
+				    
+				
+				
+				}
+				
 			}
 		}
     }
@@ -50,6 +57,25 @@ void remove_from_queue(TCB * tcb){
 	int i;
 	for(i = 0; i < NUM_THREADS; i ++) {
 		if( run_queue[i] == tcb){
+			if((tcb->priority[1]==1)){
+			
+		for(int j = i + 1; j < NUM_THREADS; j ++) {
+			
+			if(run_queue[j] != NULL && run_queue[j]->priority[0]==tcb->priority[0] && run_queue[j]->priority[1]==1){
+				current_index = j;
+               prints("here");
+			}
+		}			
+		for(int j = 0; j < i; j++) {
+			if(run_queue[j] != NULL && run_queue[j]->priority[1]==1 && run_queue[j]->priority[0]==tcb->priority[0]){
+			
+			    prints("here1");   
+				current_index = j;
+			
+			}
+		}
+			
+		} 
 			run_queue[i] = NULL;
 			return;
 		}
@@ -67,6 +93,25 @@ TCB * pick_next_in_queue(){
 		}
 	} else {
 #if  dyn==1
+        if((run_queue[current_index]->priority[1]==1)&&run_queue[current_index]!=NULL){
+			
+		for(int i = current_index + 1; i < NUM_THREADS; i ++) {
+			
+			if(run_queue[i] != NULL && run_queue[i]->priority[0]==run_queue[current_index]->priority[0] ){
+				current_index = i;
+                return run_queue[i];
+			}
+		}
+		for(int i = 0; i <= current_index; i++) {
+			if(run_queue[i] != NULL && run_queue[i]->priority[1]==1 && run_queue[i]->priority[0]==run_queue[current_index]->priority[0]){
+				current_index = i;
+				return run_queue[i];
+			}
+		}
+			
+		} 
+			
+		
         for(int i = current_index ; i < NUM_THREADS; i ++) {
 			if(run_queue[i] != NULL){
 				current_index = i;
