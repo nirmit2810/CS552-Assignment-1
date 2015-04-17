@@ -56,6 +56,8 @@ void priority_queue( ){
 void remove_from_queue(TCB * tcb){
 	int i;
 	for(i = 0; i < NUM_THREADS; i ++) {
+		
+#if dyn==1
 		if( run_queue[i] == tcb){
 			if((tcb->priority[1]==1)){
 			
@@ -63,13 +65,13 @@ void remove_from_queue(TCB * tcb){
 			
 			if(run_queue[j] != NULL && run_queue[j]->priority[0]==tcb->priority[0] && run_queue[j]->priority[1]==1){
 				current_index = j;
-               prints("here");
+            
 			}
 		}			
 		for(int j = 0; j < i; j++) {
 			if(run_queue[j] != NULL && run_queue[j]->priority[1]==1 && run_queue[j]->priority[0]==tcb->priority[0]){
 			
-			    prints("here1");   
+	   
 				current_index = j;
 			
 			}
@@ -78,7 +80,15 @@ void remove_from_queue(TCB * tcb){
 		} 
 			run_queue[i] = NULL;
 			return;
+
+
 		}
+#else
+		if( run_queue[i] == tcb){
+			run_queue[i] = NULL;
+			return;
+		}
+#endif		
 	}
 	prints("Error: Can't find tcb to remove from runqueue");
 }
