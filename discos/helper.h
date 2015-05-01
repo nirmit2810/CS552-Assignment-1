@@ -1,6 +1,7 @@
 #ifndef __H_HELPER__
 #define __H_HELPER__
 #include "stdint.h"
+#include "global_t.h"
 
 static inline void outb(uint16_t port, uint8_t val)
 {
@@ -23,4 +24,6 @@ static inline void io_wait(void)
                    "2:" );
 }
 
+void strcpy_b (char * destination, const char * source, uint8_t byte);
+bool strmatch (const char * str1, const char * str2);
 #endif

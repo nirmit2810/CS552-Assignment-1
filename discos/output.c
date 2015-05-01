@@ -157,3 +157,19 @@ void newline(){
 void prints(const char * str){
 	terminal_writestring(str);
 }
+void println(const char * str){
+	terminal_writestring(str);
+	terminal_writestring("\n");
+}
+
+void printn(int i){
+	char temp[20];
+	itoa(i, temp, 10);
+	prints(temp);
+}
+
+void printnln(int i){
+	char temp[20];
+	itoa(i, temp, 10);
+	println(temp);
+}

@@ -1,6 +1,11 @@
 #include "output.h"
 #include "thread.h"
 #include "scheduler.h"
+#include "fs_func.h"
+#include "fs_debug.h"
+
+//TO BE DELETED
+#include "fs.h"
 
 static uint32_t stack1[1024];
 //static uint32_t stack2[1024];
@@ -9,9 +14,24 @@ static uint32_t stack1[1024];
 
 static TCB threads[NUM_THREADS];
 
-static TCB * current_pcb;
+TCB * current_pcb;
+
 //priority
 int p[4]={0,2,2,3};
+
+static void fs_test1() {
+	rd_mkdir("/usr/");
+	//rd_mkdir("/usr/cs551");
+	//rd_mkdir("/usr/cs552");
+	//rd_mkdir("/usr/cs553");
+	//rd_mkdir("/usr/cs554");
+	//rd_mkdir("/usr/cs555");
+	//rd_mkdir("/usr/cs556");
+	//rd_mkdir("/usr/cs557");
+	//rd_mkdir("/usr/cs557");
+	//rd_mkdir("/usr/cs559");
+	print_fs_in(&(file_system.ins[0]));
+}
 
 static void thread1() {
 	int x = 0;
@@ -138,7 +158,8 @@ int thread_create( void * stack, void * function, int priority) {
 }
 
 void init_thread(void){
-	thread_create(&stack1[1023], thread1, p[0]);
+	thread_create(&stack1[1023], fs_test1, p[0]);
+	//thread_create(&stack1[1023], thread1, p[0]);
 	//thread_create(&stack2[1023], thread2, p[1]);
 	//thread_create(&stack3[1023], thread3, p[2]);
 	//thread_create(&stack4[1023], thread4, p[3]);

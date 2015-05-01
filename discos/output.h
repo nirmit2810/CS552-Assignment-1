@@ -36,4 +36,7 @@ void update_cursor(int row, int col);
 char * itoa( multiboot_uint32_t value, char * str, int base );
 
 void prints(const char * str);
+void println(const char * str);
+void printn(int i);
+void printnln(int i);
 #endif

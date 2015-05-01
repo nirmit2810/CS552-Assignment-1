@@ -1,17 +1,13 @@
 #ifndef __H_THREAD__
 #define __H_THREAD__
 #include "stdint.h"
+#include "global_t.h"
 
 #define NUM_THREADS 1
 #define ESP = 0x0
 
-#define prem 1                                       // prem 1 enables the preemptive version
+#define prem 0                                       // prem 1 enables the preemptive version
 #define dyn  0	                            //  dyn 1 enables static scheduling policy
-
-typedef enum {
-  FALSE,
-  TRUE
-} bool;
 
 typedef struct file_descriptor_st {
 	uint32_t number;
@@ -41,5 +37,7 @@ void yield();
 void exit_thread();
 
 void init_thread(void); 
+
+extern TCB * current_pcb;
 
 #endif
