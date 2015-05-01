@@ -169,16 +169,15 @@ int rd_open(char *pathname){
 
 int rd_close(int fd){
 	system_init_check();
-    int x = delete_from_table(fd);
-    if(x==0){
-	return FLAG_SUCCESS;
+	int x = delete_from_table(fd);
+	if(x == 0){
+		return FLAG_SUCCESS;
 	}
 	
-	if(x==-1){
-	println("Error: Fd doesn't exist in the file descriptor table ");	
-	return FLAG_ERROR;
+	if(x == FLAG_ERROR){
+		println("Error: Fd doesn't exist in the file descriptor table ");	
+		return FLAG_ERROR;
 	}
-
 }
 
 int rd_read(int fd, char * address, int num_bytes){

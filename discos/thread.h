@@ -42,13 +42,6 @@ void init_thread(void);
 
 extern TCB * current_pcb;
 
-void add_to_table(file_descriptor fd); 
-
-int delete_from_table(int fd);
-
-int check_if_fd_exists(int fd);
-
-file_descriptor * file_descriptor_entry(int fd);
 
 
 #endif
