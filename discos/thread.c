@@ -27,25 +27,45 @@ static void fs_test1() {
 	//		rd_mkdir(a);
 	//	}
 	//}
-    //rd_mkdir("/usr");
-	rd_creat("/usr");
-  rd_creat("/was");
-  int usr = rd_open("/usr");
-   // rd_open("/sfsd");
-  int was = rd_open("/was");
+  rd_mkdir("/usr");
+	print_fs_in(&(file_system.ins[0]));
+	rd_creat("/usr/bin");
+	print_fs_in(&(file_system.ins[1]));
+  rd_creat("/usr/abc");
+	print_fs_in(&(file_system.ins[1]));
+	print_fs_in(&(file_system.ins[2]));
+	print_fs_in(&(file_system.ins[3]));
+	println("");
+	rd_unlink("/usr/abc");
+	print_fs_in(&(file_system.ins[0]));
+	print_fs_in(&(file_system.ins[1]));
+	print_fs_in(&(file_system.ins[2]));
+	print_fs_in(&(file_system.ins[3]));
+	rd_unlink("/usr/bin");
+	println("");
+	print_fs_in(&(file_system.ins[0]));
+	print_fs_in(&(file_system.ins[1]));
+	print_fs_in(&(file_system.ins[2]));
+	print_fs_in(&(file_system.ins[3]));
+	rd_unlink("/usr");
+	println("");
+	print_fs_in(&(file_system.ins[0]));
+	print_fs_in(&(file_system.ins[1]));
+	print_fs_in(&(file_system.ins[2]));
+	print_fs_in(&(file_system.ins[3]));
   //  rd_open("/was");
    // rd_open("/usr");
   //rd_mkdir("/direc");
   //rd_open("/direc");
    // rd_open("/was");
   //  rd_close(1);
-#define STRLEN(s) (sizeof(s)/sizeof(s[0]))
-	char a[] = \
-	"\
-0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
-0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
-0123456789012345678901234567890123456789012345639489348\
-";
+//#define STRLEN(s) (sizeof(s)/sizeof(s[0]))
+//	char a[] = \
+//	"\
+//0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
+//0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
+//0123456789012345678901234567890123456789012345639489348\
+//";
 
 	//const int num = 8 + 64 + 10;
 	//int ee;

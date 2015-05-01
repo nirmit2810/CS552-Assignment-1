@@ -347,20 +347,16 @@ int rd_unlink(char * pathname){
 				}
 			}
 			reset_index_node(to_delete_node);
+			remove_entry_from_parent_directory(entry, directory_node);
 
-			// Remove from parent directory................ UGHUGH
-			//TODO
-
-
-		} else if (strmatch(to_delete_node->type,FILE_TYPE_REG)){
+		} else if (strmatch(to_delete_node->type,FILE_TYPE_DIR)){
 			//If it's a directory file
 			if( to_delete_node -> size != 0){
 				println("Cannnot delete non-empty directory");
 				return FLAG_ERROR;
 			} else {
 				reset_index_node(to_delete_node);
-				//Delete from parents
-
+				remove_entry_from_parent_directory(entry, directory_node);
 			}
 		} else {
 			println("Error: Trying to delete unknown file type");

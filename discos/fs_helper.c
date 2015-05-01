@@ -314,15 +314,37 @@ void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
 		if(num < NUM_DIRECT_POINTER) {
 			clear_block_content(node->locations[num]);
 			node->locations[num] = NULL;
-	}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
-			clear_block_content(node->locations[num]);
+		}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
+			num -= NUM_DIRECT_POINTER;
+			//Deleting actual block
 			allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER];
+
 			clear_block_content(first->in_blk.block_pointers[num]);
 			first->in_blk.block_pointers[num] = NULL;
 
-	}
+			if(last_entry_index == NUM_DIRECT_POINTER){
+				clear_block_content(first);
+				node->locations[NUM_DIRECT_POINTER] = NULL;
+			}
+		} else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR + NUM_DOUBLE_LEVEL_PTR) {
+			num -= NUM_DIRECT_POINTER;
+			num -= NUM_SINGLE_LEVEL_PTR;
+			allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER + 1];
+			int index = num / NUM_ENTRIES_IN_INDEX_BLOCK;
+			int offset = num % (uint8_t)(NUM_ENTRIES_IN_INDEX_BLOCK);
+			//Deleting actual block
+			allocated_block_t * second =  first->in_blk.block_pointers[index];
 
-
+			clear_block_content(second->in_blk.block_pointers[offset]);
+			second->in_blk.block_pointers[offset] = NULL;
+			if(offset == 0) {
+				clear_block_content(second);
+				first->in_blk.block_pointers[index] = NULL;
+				if(index == 0) {
+					clear_block_content(first);
+					node->locations[NUM_DIRECT_POINTER + 1] = NULL;
+				}
+			}
+		}
 	}
 }
-
