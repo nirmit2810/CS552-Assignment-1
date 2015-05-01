@@ -47,9 +47,8 @@ void add_to_table(file_descriptor fd1){
 	}
 	println("Fd table full close some file");
 }
+
 int delete_from_table(int fd1){
-	
-	
 	int i;
 		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
 			if(current_pcb->fd[i].number == fd1){
@@ -61,31 +60,20 @@ int delete_from_table(int fd1){
 		}
      
      return FLAG_ERROR;
-	
-	
 }
 
 
 int check_if_fd_exists(int fd1){
-	
-		int i;
-		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
-			if(current_pcb->fd[i].number == fd1){
-				return FLAG_SUCCESS;
-			}
-		}
-     
-  return FLAG_ERROR;
-	
-
+	file_descriptor *entry = file_descriptor_entry(fd1);
+	if(entry == NULL)
+		return FLAG_ERROR;
+	return FLAG_SUCCESS;
 }
-
 
 file_descriptor * file_descriptor_entry(int fd1){
 
     file_descriptor *entry;
     int i;
-
     for (i = 0; i < MAX_FILE_DESCRIPTOR_NUM; i++)
     {
         if(current_pcb->fd[i].number == fd1){
@@ -95,6 +83,4 @@ file_descriptor * file_descriptor_entry(int fd1){
 		}
     
     return NULL;
-
-
 }

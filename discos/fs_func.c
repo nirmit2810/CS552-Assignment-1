@@ -237,34 +237,34 @@ int rd_read(int fd, char * address, int num_bytes){
 int rd_write(int fd, char * address, int num_bytes){
 	system_init_check();
  
-     if (check_if_fd_exists(fd) == -1)
-    {
-        println("The given fd does not exist in the file descriptor table.");
-        return FLAG_ERROR;
-    }
-    
-    file_descriptor * fdesp=NULL;
-    fdesp = file_descriptor_entry(fd);
-    if(fdesp==NULL){ 
-		return FLAG_ERROR;	 
+	if (check_if_fd_exists(fd) == FLAG_ERROR)
+	{
+			println("The given fd does not exist in the file descriptor table.");
+			return FLAG_ERROR;
 	}
-    int bytes_to_copy = num_bytes;
-    int copied=0;
-	allocated_block_t *blkp=NULL;
-    blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
-    int size;
-    while(bytes_to_copy > 0){
-		
-         size= get_inode_size_at_inode_index(fdesp->index_node_number);
-                 
-         if(((fdesp->offset/BLOCK_SIZE)> (size-1)/BLOCK_SIZE) && size != 0){     	   
-         blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
-        if(blkp==NULL){
-		return copied;
-			}
-		 }         		
-		
-		 int offset= fdesp->offset%256;
+	
+	file_descriptor * fdesp=NULL;
+	fdesp = file_descriptor_entry(fd);
+	if(fdesp==NULL){ 
+	return FLAG_ERROR;	 
+}
+	int bytes_to_copy = num_bytes;
+	int copied=0;
+allocated_block_t *blkp=NULL;
+	blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+	int size;
+	while(bytes_to_copy > 0){
+	
+			 size= get_inode_size_at_inode_index(fdesp->index_node_number);
+							 
+			 if(((fdesp->offset/BLOCK_SIZE)> (size-1)/BLOCK_SIZE) && size != 0){     	   
+			 blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+			if(blkp==NULL){
+	return copied;
+		}
+	 }         		
+	
+	 int offset= fdesp->offset%256;
          
         
 		for(int i=offset;i<BLOCK_SIZE;i++)
