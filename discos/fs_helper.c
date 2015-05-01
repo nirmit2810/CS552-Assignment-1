@@ -73,6 +73,15 @@ index_node * get_and_use_next_unused_node(uint16_t * index){
 	return NULL;
 }
 
+void reset_index_node(index_node *innode){
+	if(innode->assigned == 0)
+		return;
+	innode->type[0] = '\0';
+	innode->size = 0;
+	innode->assigned = 0;
+	file_system.sb.sb.num_free_innodes ++;
+}
+
 //Bit mask
 uint16_t get_next_available_bit(){
 	uint16_t result = 0;
@@ -233,15 +242,23 @@ entry_dir * filename_in_directory(const char * filename, index_node * node){
 	return NULL;
 }
 
+uint16_t index_of_allocated_block(allocated_block_t * blk){
+	unsigned int add = (unsigned int) blk;
+	unsigned int start = (unsigned int) file_system.alloc_blks;
+	return (add - start) / BLOCK_SIZE;
+}
+
+static const int entry_size = sizeof(entry_dir);
+static const int entries_per_block = BLOCK_SIZE / NUM_BYTES_FOR_DIR_ENTRY;
+
 entry_dir * walk_along_directory_entry(index_node * node, int * next_entry_index){
 	const uint32_t size = node->size;
-	const int entry_size = sizeof(char) * DIR_FILENAME_SIZE + sizeof(uint16_t);
-	const int entries_per_block = BLOCK_SIZE / NUM_BYTES_FOR_DIR_ENTRY;
 	const int entries_filled = size / entry_size;
 	if ((*next_entry_index) >= entries_filled)
 		return NULL;
 	const int block_index = (*next_entry_index) / entries_per_block;
 	const int block_offset = (*next_entry_index) % entries_per_block;
+
 	allocated_block_t * block = get_alloc_block_with_num(node, block_index);
 	if(!block){
 		println("Not returning a block to walk through directory");
@@ -253,8 +270,6 @@ entry_dir * walk_along_directory_entry(index_node * node, int * next_entry_index
 
 entry_dir * create_new_entry(index_node * node){
 	const uint32_t size = node->size;
-	const int entry_size = sizeof(char) * DIR_FILENAME_SIZE + sizeof(uint16_t);
-	const int entries_per_block = BLOCK_SIZE / NUM_BYTES_FOR_DIR_ENTRY;
 	const int entries_filled = size / entry_size;
 	allocated_block_t * target = get_last_available_alloc_block(node);
 	if(target){
@@ -265,3 +280,49 @@ entry_dir * create_new_entry(index_node * node){
 		return NULL;
 	}
 }
+
+void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
+
+	if(!strmatch(node->type,FILE_TYPE_DIR)){
+		println("Trying to delete entry from non-directory node");
+		return;
+	}
+	int next_entry_index = 0;
+	entry_dir * curr_entry = NULL;
+	entry_dir * previous_entry = NULL;
+	//Shifting all the directory entries
+	while(curr_entry = walk_along_directory_entry(node, &next_entry_index)){
+		if(previous_entry){
+			//Copy from curr to previous
+			strcpy_b(previous_entry->filename, curr_entry->filename, DIR_FILENAME_SIZE);
+			previous_entry->index_node_number = curr_entry->index_node_number;
+		} else {
+			if(curr_entry == dir)
+				previous_entry = curr_entry;
+		}
+	}
+	node->size -= sizeof(entry_dir);
+
+	int last_entry_index = next_entry_index - 1;
+	int second_to_last_entry_index = next_entry_index - 2;
+	int last_entry_block_index = last_entry_index / entries_per_block;
+	int second_to_last_entry_block_index = second_to_last_entry_index / entries_per_block;
+
+	//Delete old pointer if needed
+	if (last_entry_block_index != second_to_last_entry_block_index) {
+		int num = last_entry_index;
+		if(num < NUM_DIRECT_POINTER) {
+			clear_block_content(node->locations[num]);
+			node->locations[num] = NULL;
+	}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
+			clear_block_content(node->locations[num]);
+			allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER];
+			clear_block_content(first->in_blk.block_pointers[num]);
+			first->in_blk.block_pointers[num] = NULL;
+
+	}
+
+
+	}
+}
+

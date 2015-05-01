@@ -142,7 +142,7 @@ int rd_open(char *pathname){
 	  int inum;
 		inum = entry->index_node_number;
 		index_node * new_node = get_index_node_at_index(entry->index_node_number);
-		if(strmatch(new_node->type,FILE_TYPE_REG)){
+		if(strmatch(new_node->type,FILE_TYPE_REG) || strmatch(new_node->type,FILE_TYPE_DIR)){
 			int check= check_if_inode_exists(inum);
 			if(check == FLAG_ERROR){
 				fd.number = current_value;
@@ -158,7 +158,7 @@ int rd_open(char *pathname){
 			}
 		}
 		else{
-			println("Cannot open a directory");
+			println("Opening file of unkown file type");
 			return FLAG_ERROR;	
 		}  
 	} else {
@@ -322,6 +322,55 @@ int rd_lseek(int fd, int offset){
 
 int rd_unlink(char * pathname){
 	system_init_check();
+	index_node * directory_node = NULL;
+	file_descriptor fd;
+	char buffer[TEMP_BUFFER_SIZE];
+	int flag = go_to_target_directory(pathname, & directory_node, buffer);
+	if(flag == FLAG_ERROR)
+		return flag;
+
+	if(1 && filename_in_directory(buffer, directory_node)){
+		entry_dir * entry = filename_in_directory(buffer, directory_node);
+	  int inum;
+		inum = entry->index_node_number;
+		index_node * to_delete_node = get_index_node_at_index(entry->index_node_number);
+		if(strmatch(to_delete_node->type,FILE_TYPE_REG)){
+			// If it's a regular file
+			// Loop through all the active pointers and delete blocks
+			for(int i = 0; i <= to_delete_node->size / BLOCK_SIZE; i++){
+				allocated_block_t **  pt = get_alloc_block_ptr_with_num(to_delete_node, i);
+				if( *pt != NULL ){
+					clear_block_content(*pt);
+					uint16_t block_index = index_of_allocated_block(*pt);
+					clear_bit_map(block_index);
+					*pt = NULL;
+				}
+			}
+			reset_index_node(to_delete_node);
+
+			// Remove from parent directory................ UGHUGH
+			//TODO
+
+
+		} else if (strmatch(to_delete_node->type,FILE_TYPE_REG)){
+			//If it's a directory file
+			if( to_delete_node -> size != 0){
+				println("Cannnot delete non-empty directory");
+				return FLAG_ERROR;
+			} else {
+				reset_index_node(to_delete_node);
+				//Delete from parents
+
+			}
+		} else {
+			println("Error: Trying to delete unknown file type");
+			return FLAG_ERROR;
+		}
+
+	} else {
+			println("Error: File doesn't  exists");
+			return FLAG_ERROR;
+	}
 
 }
 

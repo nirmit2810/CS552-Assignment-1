@@ -54,12 +54,11 @@ int delete_from_table(int fd1){
 			if(current_pcb->fd[i].number == fd1){
 				current_pcb->fd[i].assigned= FALSE;
 				current_pcb->fd[i].number=-1;
-                current_pcb->fd[i].index_node_number=-1;			
-			    return FLAG_SUCCESS;
+				current_pcb->fd[i].index_node_number=-1;			
+			  return FLAG_SUCCESS;
 			}
 		}
-     
-     return FLAG_ERROR;
+	 return FLAG_ERROR;
 }
 
 

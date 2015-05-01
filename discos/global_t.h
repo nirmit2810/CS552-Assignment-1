@@ -2,8 +2,8 @@
 #define __H_GLOBAL__
 
 typedef enum {
-  FALSE,
-  TRUE
+  FALSE = 0,
+  TRUE = 1
 } bool;
 
 #endif
