@@ -10,13 +10,13 @@ void print_fs_in(index_node * node){
 	prints("size: ");
 	printn(node->size);
 	prints(" ");
-	prints("assigned: ");
+	prints("used: ");
 	printn(node->assigned);
+	prints(": ");
 	if(strmatch(node->type, FILE_TYPE_DIR) == TRUE){
 		int next_entry_index = 0;
 		entry_dir * curr_entry;
 		while(curr_entry = walk_along_directory_entry(node, &next_entry_index)){
-			printnln(curr_entry);
 			prints(curr_entry->filename);
 			prints(" ");
 		}

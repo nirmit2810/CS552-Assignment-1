@@ -27,7 +27,6 @@ int clear_bit_map(uint16_t index);
 allocated_block_t * get_alloc_block_with_num(index_node * node, int num);
 allocated_block_t ** get_alloc_block_ptr_with_num(index_node * node, int num);
 allocated_block_t  * get_last_available_alloc_block(index_node * node);
-allocated_block_t * alloc_new_block_for_node(index_node * node);
 allocated_block_t * alloc_new_block();
 
 //Directory

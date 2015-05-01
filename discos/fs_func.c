@@ -37,23 +37,7 @@ void rd_reset(){
 
 }
 
-int rd_create(char * pathname){
-	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
-		println("Can't create new file. Full");
-		return FLAG_ERROR;
-	}
-	system_init_check();
-}
-
-int rd_mkdir(char *pathname){
-	system_init_check();
-	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
-		println("Can't create new file. Full");
-		return FLAG_ERROR;
-	}
-
-	char buffer[TEMP_BUFFER_SIZE];
-
+int go_to_target_directory(char * pathname, index_node ** target, char* buffer) {
 	int position = 0;
 	int flag = -3;
 
@@ -63,13 +47,15 @@ int rd_mkdir(char *pathname){
 	flag = next_path_in_str(pathname, &position, buffer);
 	while(flag != FLAG_ERROR && flag != FLAG_DONE) {
 		int next_entry_index = 0;
-		entry_dir * next_level;
-		entry_dir * curr_entry;
+		entry_dir * next_level = NULL;
+		entry_dir * curr_entry = NULL;
 		while(curr_entry = walk_along_directory_entry(directory_node, &next_entry_index)){
-			if(strmatch(pathname, curr_entry->filename)){
-				next_level = curr_entry;
-				directory_node = get_index_node_at_index(next_level->index_node_number);
-				break;
+			if(strmatch(buffer, curr_entry->filename)){
+				if(strmatch((get_index_node_at_index(curr_entry->index_node_number)->type),FILE_TYPE_DIR) == TRUE) {
+					next_level = curr_entry;
+					directory_node = get_index_node_at_index(next_level->index_node_number);
+					break;
+				}
 			}
 		}
 		if(!next_level){
@@ -78,24 +64,66 @@ int rd_mkdir(char *pathname){
 		}
 		flag = next_path_in_str(pathname, &position, buffer);
 	}
-	if(filename_in_directory(pathname, directory_node)){
-		prints("Error: Directory already exists");
+	*target = directory_node;
+	return FLAG_SUCCESS;
+}
+
+int rd_creat(char * pathname){
+	system_init_check();
+	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
+		println("Can't create new file. Full");
+		return FLAG_ERROR;
+	}
+	//Going to directory
+	index_node * directory_node = NULL;
+	char buffer[TEMP_BUFFER_SIZE];
+	int flag = go_to_target_directory(pathname, & directory_node, buffer);
+	if(flag == FLAG_ERROR)
+		return flag;
+
+	if(1 && filename_in_directory(buffer, directory_node)){
+		println("Error: File already exists");
 		return FLAG_ERROR;
 	} else {
 		uint16_t new_node_index = -1;
 		index_node * new_index_node = get_and_use_next_unused_node(&new_node_index);
-		//printnln(new_node_index);
-		strcpy_b(new_index_node->type, FILE_TYPE_DIR, 4);
+		strcpy_b(new_index_node->type, FILE_TYPE_REG, 4);
 		new_index_node->size = 0;
 
 		entry_dir * new_entry = create_new_entry(directory_node);
-		printnln(new_entry);
 		strcpy_b(new_entry->filename, buffer, DIR_FILENAME_SIZE);
 		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
 		new_entry->index_node_number = new_node_index;
 	}
-		println("first block first entry");
-		printnln(&(file_system.alloc_blks[0].en_dir[0]));
+}
+
+int rd_mkdir(char *pathname){
+	system_init_check();
+	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
+		println("Can't create new file. Full");
+		return FLAG_ERROR;
+	}
+	//Going to directory
+	index_node * directory_node;
+	char buffer[TEMP_BUFFER_SIZE];
+	int flag = go_to_target_directory(pathname, & directory_node, buffer);
+	if(flag == FLAG_ERROR)
+		return flag;
+
+	if(1 && filename_in_directory(buffer, directory_node)){
+		println("Error: Directory already exists");
+		return FLAG_ERROR;
+	} else {
+		uint16_t new_node_index = -1;
+		index_node * new_index_node = get_and_use_next_unused_node(&new_node_index);
+		strcpy_b(new_index_node->type, FILE_TYPE_DIR, 4);
+		new_index_node->size = 0;
+
+		entry_dir * new_entry = create_new_entry(directory_node);
+		strcpy_b(new_entry->filename, buffer, DIR_FILENAME_SIZE);
+		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
+		new_entry->index_node_number = new_node_index;
+	}
 }
 
 int rd_open(char *pathname){

@@ -20,9 +20,16 @@ TCB * current_pcb;
 int p[4]={0,2,2,3};
 
 static void fs_test1() {
-	rd_mkdir("/usr/");
-	//rd_mkdir("/usr/cs551");
-	//rd_mkdir("/usr/cs552");
+	//for(int i = 0; i < 8 + 10; i++) {
+	//	for(int j = 0; j < 16; j++) {
+	//		char a [7] = "/usr1/";
+	//		a[4] = i % 10 + 48;
+	//		rd_mkdir(a);
+	//	}
+	//}
+	rd_creat("/usr/");
+	rd_creat("/usr/cs552");
+	//rd_creat("/usr/cs552/123");
 	//rd_mkdir("/usr/cs553");
 	//rd_mkdir("/usr/cs554");
 	//rd_mkdir("/usr/cs555");
@@ -30,7 +37,14 @@ static void fs_test1() {
 	//rd_mkdir("/usr/cs557");
 	//rd_mkdir("/usr/cs557");
 	//rd_mkdir("/usr/cs559");
+	//rd_mkdir("/usr");
+	//rd_mkdir("/usr/abc");
+	//rd_mkdir("/usr/abc/edf");
+	//rd_mkdir("/usr/abc/edf");
+	//printnln(file_system.ins[0].locations[0]);
 	print_fs_in(&(file_system.ins[0]));
+	print_fs_in(&(file_system.ins[1]));
+	print_fs_in(&(file_system.ins[2]));
 }
 
 static void thread1() {

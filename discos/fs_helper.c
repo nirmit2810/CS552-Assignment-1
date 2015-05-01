@@ -140,23 +140,51 @@ int clear_bit_map(uint16_t index) {
 //Blocks
 allocated_block_t ** get_alloc_block_ptr_with_num(index_node * node, int num) {
 	if(num < NUM_DIRECT_POINTER) {
+		if(node->locations[num] == NULL)
+			node->locations[num] = alloc_new_block();
 		return &(node->locations[num]);
-	}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR ){
+	}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
 		num -= NUM_DIRECT_POINTER;
 		allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER];
+		if(first == NULL){
+			node->locations[NUM_DIRECT_POINTER] = alloc_new_block();
+			first =  node->locations[NUM_DIRECT_POINTER];
+		}
+		if(first->in_blk.block_pointers[num] == NULL){
+			first->in_blk.block_pointers[num] = alloc_new_block();
+		}
 		return &(first->in_blk.block_pointers[num]);
 	} else if(num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR + NUM_DOUBLE_LEVEL_PTR) {
 		num -= NUM_DIRECT_POINTER;
+		num -= NUM_SINGLE_LEVEL_PTR;
 		allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER + 1];
+		if(first == NULL){
+			node->locations[NUM_DIRECT_POINTER + 1] = alloc_new_block();
+			first =  node->locations[NUM_DIRECT_POINTER + 1];
+		}
 		int index = num / NUM_ENTRIES_IN_INDEX_BLOCK;
-		int offset = num % NUM_ENTRIES_IN_INDEX_BLOCK;
+		int offset = num % (uint8_t)(NUM_ENTRIES_IN_INDEX_BLOCK);
+		if(1){
+		printn(num);
+		prints(" ");
+		printn(index);
+		prints(" ");
+		printn(offset);
+		println("");
+		}
 		allocated_block_t * second =  first->in_blk.block_pointers[index];
+		if(first->in_blk.block_pointers[index] == NULL){
+			first->in_blk.block_pointers[index] = alloc_new_block();
+			second =  first->in_blk.block_pointers[index];
+		}
+		if(second->in_blk.block_pointers[offset] == NULL) {
+			second->in_blk.block_pointers[offset] = alloc_new_block();
+		}
 		return &(second->in_blk.block_pointers[offset]);
 	} else {
 		println("Erorr: trying to access memory block that is greater than possible");
 		return NULL;
 	}
-
 }
 
 allocated_block_t * get_alloc_block_with_num(index_node * node, int num) {
@@ -168,7 +196,6 @@ allocated_block_t * get_alloc_block_with_num(index_node * node, int num) {
 	}
 	return *(get_alloc_block_ptr_with_num(node, num));
 }
-
 allocated_block_t  * get_last_available_alloc_block(index_node * node){
 	uint32_t file_size = node->size;
 	int block_index = file_size / BLOCK_SIZE;
@@ -176,39 +203,24 @@ allocated_block_t  * get_last_available_alloc_block(index_node * node){
 		println("Error: Trying to allocate too many blocks for one single file");
 		return NULL;
 	}
-
-	
-	if(*(get_alloc_block_ptr_with_num(node, block_index)) == NULL)
-		return alloc_new_block_for_node(node);
-
 	return get_alloc_block_with_num(node, block_index);
 }
 
-allocated_block_t * alloc_new_block_for_node(index_node * node){
-		// Should create new block
-		int index = -1;
-		for(int i = 0; i < MAX_NUM_BLOCKS_PER_FILE; i++) {
-			if(*(get_alloc_block_ptr_with_num(node, i)) == NULL){
-				break;
-			}
-			index = i;
-		}
-		allocated_block_t ** newblock_ptr = get_alloc_block_ptr_with_num(node, index + 1);
-		allocated_block_t * newblock = alloc_new_block();
-		*newblock_ptr = newblock;
-		return newblock;
+void clear_block_content(allocated_block_t * blk) {
+	for(int i = 0; i < BLOCK_SIZE; i ++ ){
+	 blk->b.block[i] = 0;
+	}
 }
 
 allocated_block_t * alloc_new_block(){
 	uint16_t next_available_block_index = get_next_available_bit();
+	//Set everything in new block to 0
+	clear_block_content(&(file_system.alloc_blks[next_available_block_index]));
+	
 	//Setting bit map
 	set_bit_map(next_available_block_index);
 	return &(file_system.alloc_blks[next_available_block_index]);
 }
-
-//allocated_block_t * get_alloc_block_with_iblock_num(index_block * block){
-//}
-
 
 //Directory
 entry_dir * filename_in_directory(const char * filename, index_node * node){
