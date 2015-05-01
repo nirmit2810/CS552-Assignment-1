@@ -183,139 +183,141 @@ int rd_close(int fd){
 int rd_read(int fd, char * address, int num_bytes){
 	system_init_check();
  
-     if (check_if_fd_exists(fd) == -1)
-    {
-        println("The given fd does not exist in the file descriptor table.");
-        return FLAG_ERROR;
-    }
-    
-    file_descriptor * fdesp=NULL;
-    fdesp = file_descriptor_entry(fd);
-    if(fdesp==NULL){ 
-		return FLAG_ERROR;	 
-	}
-    int bytes_to_read = num_bytes;
-    int  copied =0;
-    allocated_block_t *blkp=NULL;
-    //blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
-    
-    int size;
-       while(bytes_to_read > 0){
-	
-		size= get_inode_size_at_inode_index(fdesp->index_node_number);	 
-	
-		if(size==0){
-     	 return 0;	  
-	   }  
-    
-       blkp = get_alloc_block_with_num(get_index_node_at_index(fdesp->index_node_number), (fdesp->offset )/BLOCK_SIZE);
-    
-     if((fdesp->offset/BLOCK_SIZE)> ((size-1)/BLOCK_SIZE) )
-	{
-	  return num_bytes - bytes_to_read;
-	}    
-      
-      int offset = (fdesp->offset )%BLOCK_SIZE;
+	file_descriptor * fdesp = NULL;
+	fdesp = file_descriptor_entry(fd);
 
-      for(int i=offset;i<BLOCK_SIZE;i++)
-	{
-	  *((unsigned char *) address++) = *((unsigned char *)blkp->b.block1 + i);
-	  terminal_putchar(*(((unsigned char *) address) -1));
-	  bytes_to_read--;
-	  fdesp->offset ++;
-	  copied++;
-	  if(fdesp->offset > (size-1) )
-	    {
-	      return num_bytes - bytes_to_read;
-	    }
-	  if(bytes_to_read == 0)
-	    return copied;
-	}
-    }
-}
-
-int rd_write(int fd, char * address, int num_bytes){
-	system_init_check();
- 
-	if (check_if_fd_exists(fd) == FLAG_ERROR)
+	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
 			return FLAG_ERROR;
 	}
 	
-	file_descriptor * fdesp=NULL;
-	fdesp = file_descriptor_entry(fd);
-	if(fdesp==NULL){ 
-	return FLAG_ERROR;	 
+  int bytes_to_read = num_bytes;
+  int copied = 0;
+  allocated_block_t * blkp=NULL;
+
+	uint16_t index_node_number = fdesp -> index_node_number;
+	index_node * innode = get_index_node_at_index(index_node_number);
+
+  int size = 0;
+	while(bytes_to_read > 0){
+
+		size = innode->size;	 
+
+    if(fdesp->offset >= size){
+			break;
+		}
+    
+    blkp = get_alloc_block_with_num(innode, (fdesp->offset)/BLOCK_SIZE);
+
+		if(!blkp){
+			break;
+		}
+    
+    //if((fdesp->offset/BLOCK_SIZE) > ((size-1)/BLOCK_SIZE) )
+		//{
+		//	//WHAT??????????
+		//	return num_bytes - bytes_to_read;
+		//}    
+      
+    int offset = (fdesp->offset ) % BLOCK_SIZE;
+
+    for(int i = offset; i < BLOCK_SIZE; i++)
+		{
+			*((unsigned char *) address++) = *((unsigned char *)blkp->b.block1 + i);
+			//terminal_putchar(*(((unsigned char *) address) -1));
+			bytes_to_read --;
+			fdesp->offset ++;
+			copied ++;
+			if(fdesp->offset >= size)
+			{
+				return copied;
+			}
+		}
+	}
+	return copied;
 }
+
+int rd_write(int fd, char * address, int num_bytes){
+	system_init_check();
+	
+	file_descriptor * fdesp = NULL;
+	fdesp = file_descriptor_entry(fd);
+
+	if (fdesp == NULL)
+	{
+			println("The given fd does not exist in the file descriptor table.");
+			return FLAG_ERROR;
+	}
+
 	int bytes_to_copy = num_bytes;
-	int copied=0;
-allocated_block_t *blkp=NULL;
-	blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+	int copied = 0;
+	uint16_t index_node_number = fdesp -> index_node_number;
+	index_node * innode = get_index_node_at_index(index_node_number);
+
+	allocated_block_t * blkp = NULL;
 	int size;
 	while(bytes_to_copy > 0){
-	
-			 size= get_inode_size_at_inode_index(fdesp->index_node_number);
-							 
-			 if(((fdesp->offset/BLOCK_SIZE)> (size-1)/BLOCK_SIZE) && size != 0){     	   
-			 blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
-			if(blkp==NULL){
-	return copied;
-		}
-	 }         		
-	
-	 int offset= fdesp->offset%256;
-         
-        
-		for(int i=offset;i<BLOCK_SIZE;i++)
-		{
-		*((unsigned char *) blkp->b.block1 + i) = *((unsigned char *) address++);
-		terminal_putchar(*((unsigned char *) blkp->b.block1 + i));
-		copied++;
-		bytes_to_copy --;
-		fdesp->offset ++;
-		if(fdesp->offset > size ){
-			  set_inode_size_at_inode_index(fdesp->index_node_number,1);
-			 size=get_inode_size_at_inode_index(fdesp->index_node_number);
-		}
-        if(bytes_to_copy == 0){
+		//Updating size of index node
+		size = innode->size;
+						 
+		//if(( (fdesp->offset/BLOCK_SIZE) > (size - 1) / BLOCK_SIZE) && size != 0){     	   
+		//	blkp = get_last_available_alloc_block(innode);
+		//	if(blkp == NULL){
+		//		return copied;
+		//	}
+		//}         		
+		blkp = get_alloc_block_with_num(innode, fdesp->offset / BLOCK_SIZE);
+		if(!blkp)
 			return copied;
+	
+	  int offset = fdesp->offset % BLOCK_SIZE;
+        
+		for(int i = offset; i < BLOCK_SIZE; i++)
+		{
+			*((unsigned char *) blkp->b.block1 + i) = *((unsigned char *) address++);
+			//terminal_putchar(*((unsigned char *) blkp->b.block1 + i));
+			copied++;
+			bytes_to_copy --;
+			fdesp->offset ++;
+			if(fdesp->offset > size){
+				set_inode_size_at_inode_index(index_node_number , 1);
+				size = innode->size;
+			}
+			if(bytes_to_copy == 0){
+				return copied;
+			}
 		}
 	}
-	}
-     
-     
-
+	return FLAG_SUCCESS;
 }
 
 int rd_lseek(int fd, int offset){
 	system_init_check();
-     if (check_if_fd_exists(fd) == -1)
-    {
-        println("The given fd does not exist in the file descriptor table.");
-        return FLAG_ERROR;
-    }
-    
-    file_descriptor * fdesp=NULL;
-    fdesp = file_descriptor_entry(fd);
-    if(fdesp==NULL){ 
-		return FLAG_ERROR;	 
+
+	file_descriptor * fdesp = NULL;
+	fdesp = file_descriptor_entry(fd);
+	uint16_t index_node_number = fdesp -> index_node_number;
+	index_node * innode = get_index_node_at_index(index_node_number);
+
+	if (fdesp == NULL)
+	{
+			println("The given fd does not exist in the file descriptor table.");
+			return FLAG_ERROR;
 	}
    
-   int  size = get_inode_size_at_inode_index(fdesp->index_node_number);
+  int size = innode->size;
   
-   if(offset > size-1)
-    {
-	   
-      println("Offset is greater than the file size");
-      return FLAG_ERROR;
-    }
-  else
-    {
-      fdesp->offset= offset;
-      return FLAG_SUCCESS;
-    }
-
+	if(offset >= size)
+  {
+		println("Offset is greater than the file size");
+		return FLAG_ERROR;
+	}
+	else
+	{
+		fdesp->offset= offset;
+		return FLAG_SUCCESS;
+	}
 }
 
 int rd_unlink(char * pathname){

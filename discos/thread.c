@@ -29,26 +29,53 @@ static void fs_test1() {
 	//}
     //rd_mkdir("/usr");
 	rd_creat("/usr");
-    rd_creat("/was");
-     rd_open("/usr");
+  rd_creat("/was");
+  int usr = rd_open("/usr");
    // rd_open("/sfsd");
-    rd_open("/was");
+  int was = rd_open("/was");
   //  rd_open("/was");
    // rd_open("/usr");
-    rd_mkdir("/direc");
-    rd_open("/direc");
+  //rd_mkdir("/direc");
+  //rd_open("/direc");
    // rd_open("/was");
   //  rd_close(1);
-     char a[4]="ab3d";
-    rd_write(1,a, 4);
-    char *b;
-    rd_lseek(1,1);
-    rd_read(1,b ,4);
-   // rd_open("/wssf");
-   // rd_open("/was");
-    //rd_creat("/wssf");
-    //rd_open("/wssf");   
-    //rd_open("/usr");
+#define STRLEN(s) (sizeof(s)/sizeof(s[0]))
+	char a[] = \
+	"\
+0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
+0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\
+0123456789012345678901234567890123456789012345639489348\
+";
+
+	//const int num = 8 + 64 + 10;
+	//int ee;
+	//for(int i = 0; i < num; i++) {
+	//	ee = rd_write(usr, a, STRLEN(a));
+	//}
+  //ee = rd_write(usr, a, STRLEN(a));
+	//printnln(ee);
+
+	//rd_lseek(usr, 0);
+
+  //char b[STRLEN(a)];
+
+  //int c;
+
+	//for(int i = 0; i < num; i++) {
+	//	c = rd_read(usr, b ,STRLEN(a));
+	//	printnln(c);
+	//}
+	//println(b);
+	//println(b);
+
+  //c = rd_read(was, b ,4);
+	//println(b);
+
+  // rd_open("/wssf");
+  // rd_open("/was");
+  //rd_creat("/wssf");
+  //rd_open("/wssf");   
+  //rd_open("/usr");
 	//rd_creat("/usr/cs552/123");
 	//rd_mkdir("/usr/cs553");
 	//rd_mkdir("/usr/cs554");
@@ -62,9 +89,9 @@ static void fs_test1() {
 	//rd_mkdir("/usr/abc/edf");
 	//rd_mkdir("/usr/abc/edf");
 	//printnln(file_system.ins[0].locations[0]);
-	print_fs_in(&(file_system.ins[0]));
-	print_fs_in(&(file_system.ins[1]));
-	print_fs_in(&(file_system.ins[2]));
+	//print_fs_in(&(file_system.ins[0]));
+	//print_fs_in(&(file_system.ins[1]));
+	//print_fs_in(&(file_system.ins[2]));
 }
 
 static void thread1() {

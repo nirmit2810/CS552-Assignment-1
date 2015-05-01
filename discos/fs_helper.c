@@ -164,7 +164,7 @@ allocated_block_t ** get_alloc_block_ptr_with_num(index_node * node, int num) {
 		}
 		int index = num / NUM_ENTRIES_IN_INDEX_BLOCK;
 		int offset = num % (uint8_t)(NUM_ENTRIES_IN_INDEX_BLOCK);
-		if(1){
+		if(0){
 		printn(num);
 		prints(" ");
 		printn(index);

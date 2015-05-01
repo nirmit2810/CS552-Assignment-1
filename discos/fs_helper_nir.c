@@ -71,7 +71,6 @@ int check_if_fd_exists(int fd1){
 }
 
 file_descriptor * file_descriptor_entry(int fd1){
-
     file_descriptor *entry;
     int i;
     for (i = 0; i < MAX_FILE_DESCRIPTOR_NUM; i++)
@@ -81,6 +80,5 @@ file_descriptor * file_descriptor_entry(int fd1){
 				return entry;
 			}
 		}
-    
     return NULL;
 }
