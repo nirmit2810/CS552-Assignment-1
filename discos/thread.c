@@ -235,8 +235,8 @@ void add_to_table(file_descriptor fd1){
 	for(i = 0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
 		if(!current_pcb->fd[i].assigned){
 			current_pcb->fd[i].number = fd1.number;
-			current_pcb->fd[i].index_node_number= fd1.index_node_number;
-			current_pcb->fd[i].offset= fd1.offset;
+			current_pcb->fd[i].index_node_number = fd1.index_node_number;
+			current_pcb->fd[i].offset = fd1.offset;
 			current_pcb->fd[i].assigned= TRUE;
 		       prints("Inserting fd entry with fd= ");
 		       printn(current_pcb->fd[i].number);
@@ -246,19 +246,6 @@ void add_to_table(file_descriptor fd1){
 		}
 	}
 	println("Fd table full close some file");
-}
-int check_if_inode_exists(int inode){
-	
-		int i;
-		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
-			if(current_pcb->fd[i].index_node_number == inode){
-				return current_pcb->fd[i].number;
-			}
-		}
-     
-     return FLAG_ERROR;
-	
-
 }
 int delete_from_table(int fd1){
 	

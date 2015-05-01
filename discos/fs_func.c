@@ -138,33 +138,32 @@ int rd_open(char *pathname){
 		return flag;
 
 	if(1 && filename_in_directory(buffer, directory_node)){
-		
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
-	   int inum;
-        inum = entry->index_node_number;
-        index_node * new_node = get_index_node_at_index(entry->index_node_number);
-        if(strmatch(new_node->type,FILE_TYPE_REG)){
-        int check= check_if_inode_exists(inum);
-        if(check==-1){
-        fd.number= current_value ;
-        fd.index_node_number= inum;
-        fd.offset=0;
-         add_to_table(fd);
-         current_value++;
-	   return fd.number;
-	  }
-	  else{
-	   println("File already open !");	  
-		  return check;
-		  }
-		  }
+	  int inum;
+		inum = entry->index_node_number;
+		index_node * new_node = get_index_node_at_index(entry->index_node_number);
+		if(strmatch(new_node->type,FILE_TYPE_REG)){
+			int check= check_if_inode_exists(inum);
+			if(check == FLAG_ERROR){
+				fd.number = current_value;
+				fd.index_node_number = inum;
+				fd.offset = 0;
+				add_to_table(fd);
+				current_value++;
+				return fd.number;
+			}
+			else{
+				println("File already open !");	  
+				return check;
+			}
+		}
 		else{
-		println("Cannot open a directory");
-		return FLAG_ERROR;	
+			println("Cannot open a directory");
+			return FLAG_ERROR;	
 		}  
 	} else {
-		println("Error: File doesn't  exists");
-		return FLAG_ERROR;
+			println("Error: File doesn't  exists");
+			return FLAG_ERROR;
 	}
 }
 

@@ -14,7 +14,7 @@ typedef struct file_descriptor_st {
 	uint32_t index_node_number;
 	uint32_t offset;
 	uint32_t size;
-    bool assigned ;
+  bool assigned ;
 } file_descriptor;
 
 #define MAX_FILE_DESCRIPTOR_NUM 1024
@@ -43,8 +43,6 @@ void init_thread(void);
 extern TCB * current_pcb;
 
 void add_to_table(file_descriptor fd); 
-
-int check_if_inode_exists(int inode);
 
 int delete_from_table(int fd);
 
