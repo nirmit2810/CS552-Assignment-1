@@ -22,8 +22,8 @@ void init_timer()
    //uint8_t h = (uint8_t)( (divisor>>8) & 0xFF);
 
    // Send the frequency divisor.
+   outb(0x40, 0);
    outb(0x40, 1);
-   outb(0x40, 2);
    //outb(0x40, 0xFF);
    //outb(0x40, 0xFF);
 	asm volatile("sti\n\t");

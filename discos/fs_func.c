@@ -11,9 +11,10 @@
 #define system_init_check() do{if(!system_initialized){rd_reset();}}while(0)
 
 #define nointer
+
 #ifdef inter
-#define disable_interrupt() do{asm volatile("cli \n\t");}while(0)
-#define enable_interrupt() do{asm volatile("sti \n\t");}while(0)
+#define disable_interrupt() asm volatile("cli \n\t")
+#define enable_interrupt() asm volatile("sti \n\t")
 #endif
 
 #ifdef nointer
@@ -23,7 +24,6 @@
 
 //#define return enable_interrupt();return
 		
-
 int current_value=0;
 
 int rd_creat(char * pathname){
@@ -31,17 +31,21 @@ int rd_creat(char * pathname){
 	system_init_check();
 	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
 		println("Can't create new file. Full");
+enable_interrupt();
 		return FLAG_ERROR;
 	}
 	//Going to directory
 	index_node * directory_node = NULL;
 	char buffer[TEMP_BUFFER_SIZE];
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
-	if(flag == FLAG_ERROR)
+	if(flag == FLAG_ERROR){
+enable_interrupt();
 		return flag;
+		}
 
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: File already exists");
+enable_interrupt();
 		return FLAG_ERROR;
 	} else {
 		uint16_t new_node_index = -1;
@@ -54,26 +58,30 @@ int rd_creat(char * pathname){
 		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
 		new_entry->index_node_number = new_node_index;
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
 int rd_mkdir(char *pathname){
 	disable_interrupt();
 	system_init_check();
-	system_init_check();
 	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
 		println("Can't create new file. Full");
+		enable_interrupt();
 		return FLAG_ERROR;
 	}
 	//Going to directory
 	index_node * directory_node;
 	char buffer[TEMP_BUFFER_SIZE];
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
-	if(flag == FLAG_ERROR)
+	if(flag == FLAG_ERROR){
+enable_interrupt();
 		return flag;
+	}
 
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: Directory already exists");
+enable_interrupt();
 		return FLAG_ERROR;
 	} else {
 		uint16_t new_node_index = -1;
@@ -86,6 +94,7 @@ int rd_mkdir(char *pathname){
 		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
 		new_entry->index_node_number = new_node_index;
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
@@ -108,16 +117,20 @@ int rd_open(char *pathname){
 				fd.offset = 0;
 				add_to_table(fd);
 				current_value++;
+enable_interrupt();
 				return fd.number;
 			}
 			else{
 				println("Root already open !");	  
+enable_interrupt();
 				return rcheck;
 			}
 		}	
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
-	if(flag == FLAG_ERROR)
+	if(flag == FLAG_ERROR){
+enable_interrupt();
 		return FLAG_ERROR;
+		}
 
 	if(filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
@@ -132,21 +145,26 @@ int rd_open(char *pathname){
 				fd.offset = 0;
 				add_to_table(fd);
 				current_value++;
+enable_interrupt();
 				return fd.number;
 			}
 			else{
 				println("File already open !");	  
+enable_interrupt();
 				return check;
 			}
 		}
 		else{
 			println("Opening file of unkown file type");
+enable_interrupt();
 			return FLAG_ERROR;	
 		}  
 	} else {
 			println("Error: File doesn't  exists");
+enable_interrupt();
 			return FLAG_ERROR;
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
@@ -155,13 +173,16 @@ int rd_close(int fd){
 	system_init_check();
 	int x = delete_from_table(fd);
 	if(x == 0){
+enable_interrupt();
 		return FLAG_SUCCESS;
 	}
 	
 	if(x == FLAG_ERROR){
 		println("Error: Fd doesn't exist in the file descriptor table ");	
+enable_interrupt();
 		return FLAG_ERROR;
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
@@ -175,12 +196,14 @@ int rd_read(int fd, char * address, int num_bytes){
 	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
+enable_interrupt();
 			return FLAG_ERROR;
 	}
 	 index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
         if(strmatch(new_node->type,FILE_TYPE_DIR)){
 			
 			println("Cannot read a directory");
+enable_interrupt();
 			return FLAG_ERROR;
 		
 		}
@@ -218,10 +241,12 @@ int rd_read(int fd, char * address, int num_bytes){
 			copied ++;
 			if(bytes_to_read == 0 || fdesp->offset >= size)
 			{
+enable_interrupt();
 				return copied;
 			}
 		}
 	}
+enable_interrupt();
 	return copied;
 }
 
@@ -235,6 +260,7 @@ int rd_write(int fd, char * address, int num_bytes){
 	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
+enable_interrupt();
 			return FLAG_ERROR;
 	}
    
@@ -242,6 +268,7 @@ int rd_write(int fd, char * address, int num_bytes){
         if(strmatch(new_node->type,FILE_TYPE_DIR)){
 			
 			println("Cannot write a directory");
+enable_interrupt();
 			return FLAG_ERROR;
 		
 		}
@@ -258,6 +285,7 @@ int rd_write(int fd, char * address, int num_bytes){
 		size = innode->size;
 		blkp = get_alloc_block_with_num(innode, fdesp->offset / BLOCK_SIZE);
 		if(!blkp){
+enable_interrupt();
 			return copied;
 		}
 	
@@ -275,10 +303,12 @@ int rd_write(int fd, char * address, int num_bytes){
 				size = innode->size;
 			}
 			if(bytes_to_copy == 0){
+enable_interrupt();
 				return copied;
 			}
 		}
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
@@ -294,6 +324,7 @@ int rd_lseek(int fd, int offset){
 	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
+enable_interrupt();
 			return FLAG_ERROR;
 	}
    
@@ -302,11 +333,13 @@ int rd_lseek(int fd, int offset){
 	if(offset >= size)
   {
 		println("Offset is greater than the file size");
+enable_interrupt();
 		return FLAG_ERROR;
 	}
 	else
 	{
 		fdesp->offset= offset;
+enable_interrupt();
 		return FLAG_SUCCESS;
 	}
 }
@@ -319,6 +352,7 @@ int rd_unlink(char * pathname){
 	char buffer[TEMP_BUFFER_SIZE];
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR){
+enable_interrupt();
 		return flag;
 	}
 
@@ -339,26 +373,32 @@ int rd_unlink(char * pathname){
 			}
 			reset_index_node(to_delete_node);
 			remove_entry_from_parent_directory(entry, directory_node);
+enable_interrupt();
 			return FLAG_SUCCESS;
 		} else if (strmatch(to_delete_node->type,FILE_TYPE_DIR)){
 			//If it's a directory file
 			if( to_delete_node -> size != 0){
 				println("Cannnot delete non-empty directory");
+enable_interrupt();
 				return FLAG_ERROR;
 			} else {
 				reset_index_node(to_delete_node);
 				remove_entry_from_parent_directory(entry, directory_node);
+enable_interrupt();
 				return FLAG_SUCCESS;
 			}
 		} else {
 			println("Error: Trying to delete unknown file type");
+enable_interrupt();
 			return FLAG_ERROR;
 		}
 
 	} else {
 			println("Error: File doesn't  exists");
+enable_interrupt();
 			return FLAG_ERROR;
 	}
+enable_interrupt();
 	return FLAG_SUCCESS;
 }
 
@@ -372,12 +412,14 @@ int rd_readdir(int fd, char * address){
 	if (fdesp == NULL)
 	{
 		println("The given fd does not exist in the file descriptor table.");
+enable_interrupt();
 		return FLAG_ERROR;
 	}
 
 	index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
 	if(strmatch(new_node->type,FILE_TYPE_REG)){
 		println("rd_readdir can only be applied to Directories");
+enable_interrupt();
 		return FLAG_ERROR;
 	}
 
@@ -386,6 +428,7 @@ int rd_readdir(int fd, char * address){
 	curr_entry = walk_along_directory_entry(new_node, &next_entry_index);
 	if(curr_entry == NULL){
 		println("No more entries left in the directory");
+enable_interrupt();
 		return 0;
 	}
 	entry_dir * entry = (entry_dir *)address;
@@ -402,6 +445,7 @@ int rd_readdir(int fd, char * address){
 //      }
 //      println(" ");
 	fdesp->offset++;	
+enable_interrupt();
 	return FLAG_DONE;
 }
 
