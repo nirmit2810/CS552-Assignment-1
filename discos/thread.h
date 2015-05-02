@@ -13,8 +13,7 @@ typedef struct file_descriptor_st {
 	uint32_t number;
 	uint32_t index_node_number;
 	uint32_t offset;
-	uint32_t size;
-  bool assigned ;
+  bool assigned;
 } file_descriptor;
 
 #define MAX_FILE_DESCRIPTOR_NUM 1024

@@ -156,9 +156,11 @@ int clear_bit_map(uint16_t index) {
 allocated_block_t ** get_alloc_block_ptr_with_num(index_node * node, int num) {
 	if(num < NUM_DIRECT_POINTER) {
 		if(node->locations[num] == NULL)
-			node->locations[num] = alloc_new_block();
+		node->locations[num] = alloc_new_block();
 		return &(node->locations[num]);
 	}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
+		//printn(num);
+		//prints(" ");
 		num -= NUM_DIRECT_POINTER;
 		allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER];
 		if(first == NULL){
@@ -340,7 +342,7 @@ void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
 			remove_block(first->in_blk.block_pointers[num]);
 			first->in_blk.block_pointers[num] = NULL;
 
-			if(last_entry_index == NUM_DIRECT_POINTER){
+			if(last_entry_block_index == NUM_DIRECT_POINTER){
 				remove_block(first);
 				node->locations[NUM_DIRECT_POINTER] = NULL;
 			}
@@ -350,6 +352,8 @@ void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
 			allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER + 1];
 			int index = num / NUM_ENTRIES_IN_INDEX_BLOCK;
 			int offset = num % (uint8_t)(NUM_ENTRIES_IN_INDEX_BLOCK);
+			printnln(index);
+			printnln(offset);
 			//Deleting actual block
 			allocated_block_t * second =  first->in_blk.block_pointers[index];
 

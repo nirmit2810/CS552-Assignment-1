@@ -19,7 +19,7 @@
 // #define's to control what tests are performed,
 // comment out a test if you do not wish to perform it
 
-//#define TEST1
+#define TEST1
 #define TEST2
 //#define TEST3
 //#define TEST4
@@ -76,8 +76,8 @@ static char pathname[80];
 
 static char data1[DIRECT*BLK_SZ]; /* Largest data directly accessible */
 static char data2[PTRS_PB*BLK_SZ];     /* Single indirect data size */
-static char data3[PTRS_PB*PTRS_PB*BLK_SZ+1]; /* Double indirect data size */
-static char addr[PTRS_PB*PTRS_PB*BLK_SZ+1]; /* Scratchpad memory */
+static char data3[PTRS_PB*PTRS_PB*BLK_SZ]; /* Double indirect data size */
+static char addr[PTRS_PB*PTRS_PB*BLK_SZ]; /* Scratchpad memory */
 
 void my_memset(void * b, char c, int len)
 {
@@ -173,6 +173,10 @@ int fs_test1 () {
   }
 
 #endif // TEST1
+	//for(int i = 0; i < NUM_BYTE_FOR_BITMAP; i++){
+	//	printn(file_system.bmap.byte_maps[i]);
+	//}
+	
 
 #ifdef TEST2
 
@@ -199,35 +203,47 @@ int fs_test1 () {
 
   /* Try writing to all direct data blocks */
   retval = WRITE (fd, data1, sizeof(data1));
-  printnln(get_inode_size_at_inode_index(1));
+
   if (retval < 0) {
     println ("write: File write STAGE1 error! status");
 
     my_exit(EXIT_FAILURE);
   }
 
+	//printnln(file_system.alloc_blks[8].in_blk.block_pointers[0]);
 #ifdef TEST_SINGLE_INDIRECT
 
   /* Try writing to all single-indirect data blocks */
   retval = WRITE (fd, data2, sizeof(data2));
-   printnln(get_inode_size_at_inode_index(1));
+
   if (retval < 0) {
     println ("write: File write STAGE2 error! status: ");
 
     my_exit(EXIT_FAILURE);
   }
 
+
 #ifdef TEST_DOUBLE_INDIRECT
 
   /* Try writing to all double-indirect data blocks */
   retval = WRITE (fd, data3, sizeof(data3));
-   printnln(get_inode_size_at_inode_index(1));
   if (retval < 0) {
     println ("write: File write STAGE3 error! status: ");
 
     my_exit(EXIT_FAILURE);
   }
 
+	print_fs_blockid(file_system.ins[1].locations[8]);
+	for(int i = 0; i < BLOCK_SIZE; i ++ ) {
+		char a[2];
+		a[0] = file_system.alloc_blks[17].b.block1[i];
+		if (a[0] == 0) {
+			a[0] = '-';
+		}
+		a[1] = '\0';
+		prints(a);
+	}
+return;
 #endif // TEST_DOUBLE_INDIRECT
 
 #endif // TEST_SINGLE_INDIRECT
@@ -300,11 +316,6 @@ int fs_test1 () {
   /* Try reading from all double-indirect data blocks */
   retval = READ (fd, addr, sizeof(data3));
   //retval = READ (3d, addr, 3);
-	char c[2] ;
-	c[2] = file_system.alloc_blks[20].b.block1[1];
-	c[1] = '\0';
-	println(c);
-	println(&(file_system.alloc_blks[4].b.block1[0]));
 
   if (retval < 0) {
     println ("read: File read STAGE3 error! status: ");

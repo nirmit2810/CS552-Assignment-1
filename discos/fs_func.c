@@ -222,7 +222,7 @@ int rd_read(int fd, char * address, int num_bytes){
 	
   int bytes_to_read = num_bytes;
   int copied = 0;
-  allocated_block_t * blkp=NULL;
+  allocated_block_t * blkp = NULL;
 
 	uint16_t index_node_number = fdesp -> index_node_number;
 	index_node * innode = get_index_node_at_index(index_node_number);
@@ -316,7 +316,6 @@ int rd_write(int fd, char * address, int num_bytes){
 				size = innode->size;
 			}
 			if(bytes_to_copy == 0){
-				
 				return copied;
 			}
 		}
