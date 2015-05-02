@@ -31,6 +31,7 @@ allocated_block_t  * get_last_available_alloc_block(index_node * node);
 allocated_block_t * alloc_new_block();
 uint16_t index_of_allocated_block(allocated_block_t * blk);
 void clear_block_content(allocated_block_t * blk);
+void remove_block(allocated_block_t * blk);
 
 //Directory
 entry_dir * filename_in_directory(const char * filename, index_node * node);

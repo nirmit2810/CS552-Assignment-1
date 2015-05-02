@@ -81,6 +81,10 @@ void reset_index_node(index_node *innode){
 	innode->type[0] = '\0';
 	innode->size = 0;
 	innode->assigned = INDEX_NODE_UNUSED;
+	for(int i = 0; i < NUM_BLOCK_POINTERS; i++) {
+		innode->locations[i] = 0;
+	}
+
 	file_system.sb.sb.num_free_innodes ++;
 }
 
@@ -229,6 +233,12 @@ void clear_block_content(allocated_block_t * blk) {
 	}
 }
 
+void remove_block(allocated_block_t * blk) {
+	clear_block_content(blk);
+	uint16_t block_index = index_of_allocated_block(blk);
+	clear_bit_map(block_index);
+}
+
 allocated_block_t * alloc_new_block(){
 	uint16_t next_available_block_index = get_next_available_bit();
 	//Set everything in new block to 0
@@ -317,21 +327,21 @@ void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
 	int second_to_last_entry_block_index = second_to_last_entry_index / entries_per_block;
 
 	//Delete old pointer if needed
-	if (last_entry_block_index != second_to_last_entry_block_index) {
-		int num = last_entry_index;
+	if (last_entry_index == 0 || last_entry_block_index != second_to_last_entry_block_index) {
+		int num = last_entry_block_index;
 		if(num < NUM_DIRECT_POINTER) {
-			clear_block_content(node->locations[num]);
+			remove_block(node->locations[num]);
 			node->locations[num] = NULL;
 		}else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR){
 			num -= NUM_DIRECT_POINTER;
 			//Deleting actual block
 			allocated_block_t * first =  node->locations[NUM_DIRECT_POINTER];
 
-			clear_block_content(first->in_blk.block_pointers[num]);
+			remove_block(first->in_blk.block_pointers[num]);
 			first->in_blk.block_pointers[num] = NULL;
 
 			if(last_entry_index == NUM_DIRECT_POINTER){
-				clear_block_content(first);
+				remove_block(first);
 				node->locations[NUM_DIRECT_POINTER] = NULL;
 			}
 		} else if (num < NUM_DIRECT_POINTER + NUM_SINGLE_LEVEL_PTR + NUM_DOUBLE_LEVEL_PTR) {
@@ -343,13 +353,13 @@ void remove_entry_from_parent_directory(entry_dir * dir, index_node * node){
 			//Deleting actual block
 			allocated_block_t * second =  first->in_blk.block_pointers[index];
 
-			clear_block_content(second->in_blk.block_pointers[offset]);
+			remove_block(second->in_blk.block_pointers[offset]);
 			second->in_blk.block_pointers[offset] = NULL;
 			if(offset == 0) {
-				clear_block_content(second);
+				remove_block(second);
 				first->in_blk.block_pointers[index] = NULL;
 				if(index == 0) {
-					clear_block_content(first);
+					remove_block(first);
 					node->locations[NUM_DIRECT_POINTER + 1] = NULL;
 				}
 			}

@@ -171,7 +171,6 @@ int fs_test1 () {
 
     my_memset (pathname, 0, 80);
   }
-	
 
 #endif // TEST1
 
@@ -270,6 +269,7 @@ int fs_test1 () {
 	else
 		println("Test all 1 passes");
 
+
 #ifdef TEST_SINGLE_INDIRECT
 
   /* Try reading from all single-indirect data blocks */
@@ -300,12 +300,11 @@ int fs_test1 () {
   /* Try reading from all double-indirect data blocks */
   retval = READ (fd, addr, sizeof(data3));
   //retval = READ (3d, addr, 3);
-	//char c[2] ;
-	//c[6] = file_system.alloc_blks[20].b.block1[0];
-	//c[1] = '\0';
-	//println(&(file_system.alloc_blks[20].b.block1[7]));
-	print_fs_in(&(file_system.ins[1]));
-	
+	char c[2] ;
+	c[2] = file_system.alloc_blks[20].b.block1[1];
+	c[1] = '\0';
+	println(c);
+	println(&(file_system.alloc_blks[4].b.block1[0]));
 
   if (retval < 0) {
     println ("read: File read STAGE3 error! status: ");

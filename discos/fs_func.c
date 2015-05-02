@@ -362,7 +362,7 @@ int rd_unlink(char * pathname){
 		return flag;
 	}
 
-	if(1 && filename_in_directory(buffer, directory_node)){
+	if(filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
 	  int inum;
 		inum = entry->index_node_number;
@@ -370,19 +370,17 @@ int rd_unlink(char * pathname){
 		if(strmatch(to_delete_node->type,FILE_TYPE_REG)){
 			// If it's a regular file
 			// Loop through all the active pointers and delete blocks
-			for(int i = 0; i <= to_delete_node->size / BLOCK_SIZE; i++){
+			for(int i = 0; i < (to_delete_node->size + BLOCK_SIZE - 1)  / BLOCK_SIZE; i++){
 				allocated_block_t **  pt = get_alloc_block_ptr_with_num(to_delete_node, i);
 				if( *pt != NULL ){
-					clear_block_content(*pt);
-					uint16_t block_index = index_of_allocated_block(*pt);
-					clear_bit_map(block_index);
+					remove_block(*pt);
 					*pt = NULL;
 				}
 			}
 			reset_index_node(to_delete_node);
 			remove_entry_from_parent_directory(entry, directory_node);
 			return FLAG_SUCCESS;
-		} else if (strmatch(to_delete_node->type,FILE_TYPE_REG)){
+		} else if (strmatch(to_delete_node->type,FILE_TYPE_DIR)){
 			//If it's a directory file
 			if( to_delete_node -> size != 0){
 				println("Cannnot delete non-empty directory");
