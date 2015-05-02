@@ -1,4 +1,4 @@
-FIFOS
+DISCOS
 Create by
 -Timothy Chong
 -Nirmit Shah
@@ -7,3 +7,6 @@ Citations:
 http://www.jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
 http://osdev.org
 http://www.cs.bu.edu/~richwest/cs552_spring_2015/assignments/fifos/fifos.html
+
+
+Testing script found inside randisk_test.c

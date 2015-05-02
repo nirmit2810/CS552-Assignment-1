@@ -240,7 +240,7 @@ int thread_create( void * stack, void * function, int priority) {
 
 void init_thread(void){
 	thread_create(&stack1[1023], fs_test1, p[0]);
-	//thread_create(&stack2[1023], fs_test2, p[0]);
+	thread_create(&stack2[1023], fs_test2, p[0]);
 	//thread_create(&stack2[1023], thread2, p[1]);
 	//thread_create(&stack3[1023], thread3, p[2]);
 	//thread_create(&stack4[1023], thread4, p[3]);

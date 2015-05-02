@@ -10,7 +10,7 @@
 
 #define system_init_check() do{if(!system_initialized){rd_reset();}}while(0)
 
-#define nointer
+#define inter
 
 #ifdef inter
 #define disable_interrupt() asm volatile("cli \n\t")
@@ -23,14 +23,9 @@
 #endif
 
 //#define return enable_interrupt();return
-<<<<<<< HEAD
 
 
 int current_value=0;  // We use for giving a unique Fd value in the file descriptor table
-=======
-		
-int current_value=0;
->>>>>>> origin/master
 
 int rd_creat(char * pathname){
 	disable_interrupt();
@@ -48,12 +43,9 @@ enable_interrupt();
 	if(flag == FLAG_ERROR){
 enable_interrupt();
 		return flag;
-<<<<<<< HEAD
     //Check if the file already exists
-=======
 		}
 
->>>>>>> origin/master
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: File already exists");
 enable_interrupt();
@@ -88,12 +80,9 @@ int rd_mkdir(char *pathname){
 	if(flag == FLAG_ERROR){
 enable_interrupt();
 		return flag;
-<<<<<<< HEAD
     //Check if filename already exists
-=======
 	}
 
->>>>>>> origin/master
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: Directory already exists");
 enable_interrupt();
@@ -139,12 +128,8 @@ enable_interrupt();
 				return fd.number;
 			}
 			else{
-<<<<<<< HEAD
-				println("Root already open !");
-=======
 				println("Root already open !");	  
 enable_interrupt();
->>>>>>> origin/master
 				return rcheck;
 			}
 		}
@@ -152,12 +137,9 @@ enable_interrupt();
 	if(flag == FLAG_ERROR){
 enable_interrupt();
 		return FLAG_ERROR;
-<<<<<<< HEAD
       //check if the file exists
-=======
 		}
 
->>>>>>> origin/master
 	if(filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
 	  int inum;
@@ -176,25 +158,16 @@ enable_interrupt();
 				return fd.number;
 			}
 			else{
-<<<<<<< HEAD
-				println("File already open !");
-=======
 				println("File already open !");	  
 enable_interrupt();
->>>>>>> origin/master
 				return check;
 			}
 		}
 		else{
 			println("Opening file of unkown file type");
-<<<<<<< HEAD
-			return FLAG_ERROR;
-		}
-=======
 enable_interrupt();
 			return FLAG_ERROR;	
 		}  
->>>>>>> origin/master
 	} else {
 			println("Error: File doesn't  exists");
 enable_interrupt();
@@ -214,12 +187,8 @@ enable_interrupt();
 	}
 
 	if(x == FLAG_ERROR){
-<<<<<<< HEAD
-		println("Error: Fd doesn't exist in the file descriptor table ");
-=======
 		println("Error: Fd doesn't exist in the file descriptor table ");	
 enable_interrupt();
->>>>>>> origin/master
 		return FLAG_ERROR;
 	}
 enable_interrupt();
@@ -477,10 +446,6 @@ enable_interrupt();
 	entry_dir * entry = (entry_dir *)address;
 	entry->index_node_number = curr_entry->index_node_number;
 	strcpy_b(entry->filename, curr_entry->filename, DIR_FILENAME_SIZE);
-<<<<<<< HEAD
-
-	fdesp->offset++;
-=======
     //strcpy_b((char *) address  ,curr_entry->filename,DIR_FILENAME_SIZE);
   //*((unsigned short *)address + 14) = (curr_entry->index_node_number)>>8;
   //*((unsigned short *)address + 14) = curr_entry->index_node_number;
@@ -493,7 +458,6 @@ enable_interrupt();
 //      println(" ");
 	fdesp->offset++;	
 enable_interrupt();
->>>>>>> origin/master
 	return FLAG_DONE;
 }
 
