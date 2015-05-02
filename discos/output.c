@@ -164,7 +164,7 @@ void println(const char * str){
 
 void printn(int i){
 	char temp[20];
-	itoa(i, temp, 16);
+	itoa(i, temp, 10);
 	prints(temp);
 }
 

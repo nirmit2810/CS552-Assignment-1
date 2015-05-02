@@ -8,7 +8,9 @@ typedef enum {
 	DIRECTORY,
 	REGULAR
 } file_type;
-
+extern bool system_initialized;
+void rd_reset();
+int go_to_target_directory(char * pathname, index_node ** target, char* buffer) ;
 // Paths
 int next_path_in_str(const char * src, int * position, char * buffer);
 index_node * get_next_index_node(index_node * curr_node, char * filename);

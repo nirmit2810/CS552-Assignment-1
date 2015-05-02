@@ -4,6 +4,65 @@
 #include "helper.h"
 #include "fs_debug.h"
 
+bool system_initialized = FALSE;
+void rd_reset(){
+
+	prints("File system restting....");
+	// Setting up Super block
+	// -1 to account for the root node
+	file_system.sb.sb.num_free_blocks = ALLOCATED_NUM_BLOCKS;
+	file_system.sb.sb.num_free_innodes = NUM_INDEX_NODE;
+	
+	//Clearing Bit Map
+	for(int i = 0; i < NUM_BYTE_FOR_BITMAP; i++) {
+		file_system.bmap.byte_maps[i] = 0;
+	}
+
+	// Setting up root node
+	int error = 0;
+	uint16_t dummy;
+	index_node * root_node = get_and_use_next_unused_node(&dummy);
+	error |= init_index_node_reg(root_node, DIRECTORY);
+	if(error)
+		println("Error setting up root node");
+
+	println("Done");
+	system_initialized = TRUE;
+
+}
+
+int go_to_target_directory(char * pathname, index_node ** target, char* buffer) {
+	int position = 0;
+	int flag = -3;
+
+	index_node * directory_node = &(file_system.ins[ROOT_IN_INDEX]);
+
+	// PARSING PATH
+	flag = next_path_in_str(pathname, &position, buffer);
+	while(flag != FLAG_ERROR && flag != FLAG_DONE) {
+		int next_entry_index = 0;
+		entry_dir * next_level = NULL;
+		entry_dir * curr_entry = NULL;
+		while(curr_entry = walk_along_directory_entry(directory_node, &next_entry_index)){
+			if(strmatch(buffer, curr_entry->filename)){
+				if(strmatch((get_index_node_at_index(curr_entry->index_node_number)->type),FILE_TYPE_DIR) == TRUE) {
+					next_level = curr_entry;
+					directory_node = get_index_node_at_index(next_level->index_node_number);
+					break;
+				}
+			}
+		}
+		if(!next_level){
+			println("Error: Incorrect Path");
+			return FLAG_ERROR;
+		}
+		flag = next_path_in_str(pathname, &position, buffer);
+	}
+	if(flag==FLAG_ERROR)
+		return FLAG_ERROR;
+	*target = directory_node;
+	return FLAG_SUCCESS;
+}
 int next_path_in_str(const char * src, int * position, char * buffer){
 
 	int pos = *position;

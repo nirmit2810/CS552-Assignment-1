@@ -13,6 +13,7 @@ void print_fs_in(index_node * node){
 	prints("used: ");
 	printn(node->assigned);
 	prints(": ");
+	return;
 	if(strmatch(node->type, FILE_TYPE_DIR) == TRUE){
 		int next_entry_index = 0;
 		entry_dir * curr_entry;

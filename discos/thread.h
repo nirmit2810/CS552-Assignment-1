@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include "global_t.h"
 
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 #define ESP = 0x0
 
 #define prem 0                                       // prem 1 enables the preemptive version

@@ -7,71 +7,27 @@
 #include "helper.h"
 #include "fs_debug.h"
 
-bool system_initialized = FALSE;
 
 #define system_init_check() do{if(!system_initialized){rd_reset();}}while(0)
 
+#define nointer
+#ifdef inter
+#define disable_interrupt() do{asm volatile("cli \n\t");}while(0)
+#define enable_interrupt() do{asm volatile("sti \n\t");}while(0)
+#endif
+
+#ifdef nointer
+#define disable_interrupt() do{}while(0)
+#define enable_interrupt() do{}while(0)
+#endif
+
+//#define return enable_interrupt();return
+		
+
 int current_value=0;
-void rd_reset(){
-
-	prints("File system restting....");
-	// Setting up Super block
-	// -1 to account for the root node
-	file_system.sb.sb.num_free_blocks = ALLOCATED_NUM_BLOCKS;
-	file_system.sb.sb.num_free_innodes = NUM_INDEX_NODE;
-	
-	//Clearing Bit Map
-	for(int i = 0; i < NUM_BYTE_FOR_BITMAP; i++) {
-		file_system.bmap.byte_maps[i] = 0;
-	}
-
-	// Setting up root node
-	int error = 0;
-	uint16_t dummy;
-	index_node * root_node = get_and_use_next_unused_node(&dummy);
-	error |= init_index_node_reg(root_node, DIRECTORY);
-	if(error)
-		println("Error setting up root node");
-
-	println("Done");
-	system_initialized = TRUE;
-
-}
-
-int go_to_target_directory(char * pathname, index_node ** target, char* buffer) {
-	int position = 0;
-	int flag = -3;
-
-	index_node * directory_node = &(file_system.ins[ROOT_IN_INDEX]);
-
-	// PARSING PATH
-	flag = next_path_in_str(pathname, &position, buffer);
-	while(flag != FLAG_ERROR && flag != FLAG_DONE) {
-		int next_entry_index = 0;
-		entry_dir * next_level = NULL;
-		entry_dir * curr_entry = NULL;
-		while(curr_entry = walk_along_directory_entry(directory_node, &next_entry_index)){
-			if(strmatch(buffer, curr_entry->filename)){
-				if(strmatch((get_index_node_at_index(curr_entry->index_node_number)->type),FILE_TYPE_DIR) == TRUE) {
-					next_level = curr_entry;
-					directory_node = get_index_node_at_index(next_level->index_node_number);
-					break;
-				}
-			}
-		}
-		if(!next_level){
-			println("Error: Incorrect Path");
-			return FLAG_ERROR;
-		}
-		flag = next_path_in_str(pathname, &position, buffer);
-	}
-	if(flag==FLAG_ERROR)
-		return FLAG_ERROR;
-	*target = directory_node;
-	return FLAG_SUCCESS;
-}
 
 int rd_creat(char * pathname){
+	disable_interrupt();
 	system_init_check();
 	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
 		println("Can't create new file. Full");
@@ -98,9 +54,12 @@ int rd_creat(char * pathname){
 		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
 		new_entry->index_node_number = new_node_index;
 	}
+	return FLAG_SUCCESS;
 }
 
 int rd_mkdir(char *pathname){
+	disable_interrupt();
+	system_init_check();
 	system_init_check();
 	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
 		println("Can't create new file. Full");
@@ -127,9 +86,11 @@ int rd_mkdir(char *pathname){
 		new_entry->filename[DIR_FILENAME_SIZE - 1] = '\0';
 		new_entry->index_node_number = new_node_index;
 	}
+	return FLAG_SUCCESS;
 }
 
 int rd_open(char *pathname){
+	disable_interrupt();
 	system_init_check();
 
 	index_node * directory_node = NULL;
@@ -186,9 +147,11 @@ int rd_open(char *pathname){
 			println("Error: File doesn't  exists");
 			return FLAG_ERROR;
 	}
+	return FLAG_SUCCESS;
 }
 
 int rd_close(int fd){
+	disable_interrupt();
 	system_init_check();
 	int x = delete_from_table(fd);
 	if(x == 0){
@@ -199,9 +162,11 @@ int rd_close(int fd){
 		println("Error: Fd doesn't exist in the file descriptor table ");	
 		return FLAG_ERROR;
 	}
+	return FLAG_SUCCESS;
 }
 
 int rd_read(int fd, char * address, int num_bytes){
+	disable_interrupt();
 	system_init_check();
  
 	file_descriptor * fdesp = NULL;
@@ -261,6 +226,7 @@ int rd_read(int fd, char * address, int num_bytes){
 }
 
 int rd_write(int fd, char * address, int num_bytes){
+	disable_interrupt();
 	system_init_check();
 	
 	file_descriptor * fdesp = NULL;
@@ -290,24 +256,17 @@ int rd_write(int fd, char * address, int num_bytes){
 	while(bytes_to_copy > 0){
 		//Updating size of index node
 		size = innode->size;
-						 
-		//if(( (fdesp->offset/BLOCK_SIZE) > (size - 1) / BLOCK_SIZE) && size != 0){     	   
-		//	blkp = get_last_available_alloc_block(innode);
-		//	if(blkp == NULL){
-		//		return copied;
-		//	}
-		//}         		
 		blkp = get_alloc_block_with_num(innode, fdesp->offset / BLOCK_SIZE);
 		if(!blkp){
-	        return copied;
-	}
+			return copied;
+		}
 	
 	  int offset = fdesp->offset % BLOCK_SIZE;
         
 		for(int i = offset; i < BLOCK_SIZE; i++)
 	{
-			*((unsigned char *) blkp->b.block1 + i) = *((unsigned char *) address++);
-			//terminal_putchar(*((unsigned char *) blkp->b.block1 + i));
+			blkp->b.block1[i] = *(address++);
+			//terminal_putchar(*((unsigned char *) address));
 			copied++;
 			bytes_to_copy --;
 			fdesp->offset ++;
@@ -324,6 +283,7 @@ int rd_write(int fd, char * address, int num_bytes){
 }
 
 int rd_lseek(int fd, int offset){
+	disable_interrupt();
 	system_init_check();
 
 	file_descriptor * fdesp = NULL;
@@ -352,6 +312,7 @@ int rd_lseek(int fd, int offset){
 }
 
 int rd_unlink(char * pathname){
+	disable_interrupt();
 	system_init_check();
 	index_node * directory_node = NULL;
 	file_descriptor fd;
@@ -398,48 +359,49 @@ int rd_unlink(char * pathname){
 			println("Error: File doesn't  exists");
 			return FLAG_ERROR;
 	}
-
+	return FLAG_SUCCESS;
 }
 
 int rd_readdir(int fd, char * address){
+	enable_interrupt();
 	system_init_check();
    
-   file_descriptor * fdesp = NULL;
+  file_descriptor * fdesp = NULL;
 	fdesp = file_descriptor_entry(fd);
 
 	if (fdesp == NULL)
 	{
-			println("The given fd does not exist in the file descriptor table.");
-			return FLAG_ERROR;
+		println("The given fd does not exist in the file descriptor table.");
+		return FLAG_ERROR;
 	}
-   
-     index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
-        if(strmatch(new_node->type,FILE_TYPE_REG)){
-			
-			println("rd_readdir can only be applied to Directories");
-			return FLAG_ERROR;
-		
-		}
+
+	index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
+	if(strmatch(new_node->type,FILE_TYPE_REG)){
+		println("rd_readdir can only be applied to Directories");
+		return FLAG_ERROR;
+	}
+
 	int next_entry_index = fdesp->offset;
 	entry_dir * curr_entry;
-	curr_entry = walk_along_directory_entry(get_index_node_at_index(fdesp->index_node_number), &next_entry_index);
-	if(curr_entry==NULL){
-	println("No more entries left in the directory");
-	return 0;
+	curr_entry = walk_along_directory_entry(new_node, &next_entry_index);
+	if(curr_entry == NULL){
+		println("No more entries left in the directory");
+		return 0;
 	}
-  *((unsigned short *)address) = curr_entry->index_node_number;
-    strcpy_b((char *) address +2  ,curr_entry->filename,DIR_FILENAME_SIZE);
+	entry_dir * entry = (entry_dir *)address;
+	entry->index_node_number = curr_entry->index_node_number;
+	strcpy_b(entry->filename, curr_entry->filename, DIR_FILENAME_SIZE);
+    //strcpy_b((char *) address  ,curr_entry->filename,DIR_FILENAME_SIZE);
+  //*((unsigned short *)address + 14) = (curr_entry->index_node_number)>>8;
+  //*((unsigned short *)address + 14) = curr_entry->index_node_number;
 	
-		printn(*(uint16_t *)address);
-		
-		for(int i=2;i<16; i++){
-	   terminal_putchar( *(address +i));
-      }
-      println(" ");
-	fdesp->offset+=1;	
+//		printn(*(uint16_t *)address);
+//		
+//		for(int i=2;i<16; i++){
+//	   terminal_putchar( *(address +i));
+//      }
+//      println(" ");
+	fdesp->offset++;	
 	return FLAG_DONE;
-   
-
-
 }
 

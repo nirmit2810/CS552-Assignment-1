@@ -40,7 +40,7 @@ void add_to_table(file_descriptor fd1){
 			current_pcb->fd[i].assigned= TRUE;
 		       prints("Inserting fd entry with fd= ");
 		       printn(current_pcb->fd[i].number);
-		       prints("inode = ");
+		       prints(" inode = ");
 		       printnln(current_pcb->fd[i].index_node_number);
 			return;
 		}

@@ -19,11 +19,11 @@
 // #define's to control what tests are performed,
 // comment out a test if you do not wish to perform it
 
-#define TEST1
-#define TEST2
+//#define TEST1
+//#define TEST2
 //#define TEST3
 //#define TEST4
-//#define TEST5
+#define TEST5
 
 
 #define USE_RAMDISK
@@ -125,6 +125,38 @@ void set_pathname(char * s, int index){
 	}
 }
 
+void set_pathname_parent(char * s, int index){
+	s[0] = '/';
+	s[1] = 'f';
+	s[2] = 'p';
+	s[3] = '_';
+	char temp[20];
+	itoa(index, temp, 10);
+	int i;
+	for(i = 4; i < 80; i++){
+		char e = temp[i - 4];
+		s[i] = e;
+		if(e == '\0')
+			break;
+	}
+}
+
+void set_pathname_child(char * s, int index){
+	s[0] = '/';
+	s[1] = 'f';
+	s[2] = 'c';
+	s[3] = '_';
+	char temp[20];
+	itoa(index, temp, 10);
+	int i;
+	for(i = 4; i < 80; i++){
+		char e = temp[i - 4];
+		s[i] = e;
+		if(e == '\0')
+			break;
+	}
+}
+
 int fs_test1 () {
 
   int retval, i;
@@ -133,8 +165,8 @@ int fs_test1 () {
 
   /* Some arbitrary data for our files */
   my_memset (data1, '1', sizeof (data1));
-  my_memset (data2, '2', sizeof (data1));
-  my_memset (data3, '3', sizeof (data1));
+  my_memset (data2, '2', sizeof (data2));
+  my_memset (data3, '3', sizeof (data3));
 
 
 #ifdef TEST1
@@ -232,18 +264,6 @@ int fs_test1 () {
 
     my_exit(EXIT_FAILURE);
   }
-
-	print_fs_blockid(file_system.ins[1].locations[8]);
-	for(int i = 0; i < BLOCK_SIZE; i ++ ) {
-		char a[2];
-		a[0] = file_system.alloc_blks[17].b.block1[i];
-		if (a[0] == 0) {
-			a[0] = '-';
-		}
-		a[1] = '\0';
-		prints(a);
-	}
-return;
 #endif // TEST_DOUBLE_INDIRECT
 
 #endif // TEST_SINGLE_INDIRECT
@@ -324,7 +344,7 @@ return;
   }
   /* Should be all 3s here... */
   prints ("Data at addr: ");
-	println(addr);
+	//println(addr);
 	b = addr;
 	fail = 0;
 	while( *b != '\0'){
@@ -336,8 +356,6 @@ return;
 		println("Test all 3 fails");
 	else
 		println("Test all 3 passes");
-	printnln(current_pcb->fd[0].offset);
-return;
 
 #endif // TEST_DOUBLE_INDIRECT
 
@@ -410,61 +428,66 @@ return;
       my_exit(EXIT_FAILURE);
     }
 
-    index_node_number = atoi(&addr[14]);
+    //index_node_number = atoi(&addr[14]);
     prints ("Contents at addr: [");
 		prints(addr);
-		printnln(index_node_number);
+		prints(",");
+		printn(*((uint16_t*) (addr + 14)));
+		println("]");
   }
 
 #endif // TEST4
+
+
+  println("Congratulations, you have passed all tests!!\n");
 
 #ifdef TEST5
 
   /* ****TEST 5: 2 process test**** */
 
- // if((retval = fork())) {
+	/* Generate 300 regular files */
+	for (i = 0; i < 300; i++) {
 
- //   if(retval == -1) {
- //     println("Failed to fork\n");
- //     my_exit(EXIT_FAILURE);
- //   }
+		set_pathname_parent(pathname, i);
+		retval = CREAT (pathname);
 
- //   /* Generate 300 regular files */
- //   for (i = 0; i < 300; i++) {
+		if (retval < 0) {
+println ("(Parent) create: File creation error! status: ");
 
- //			set_pathname(pathname, i);
- //     retval = CREAT (pathname);
+my_exit(EXIT_FAILURE);
+		}
 
- //     if (retval < 0) {
- // println ("(Parent) create: File creation error! status: ");
+		my_memset (pathname, 0, 80);
+	}
 
- // my_exit(EXIT_FAILURE);
- //     }
+#endif // TEST5
+  return 0;
+}
 
- //     my_memset (pathname, 0, 80);
- //   }
 
- // }
- // else {
- //   /* Generate 300 regular files */
- //   for (i = 0; i < 300; i++) {
- //			set_pathname(pathname, i);
+void fs_test2 () {
 
- //     retval = CREAT (pathname);
+#ifdef TEST5
+  /* ****TEST 5: 2 process test**** */
 
- //     if (retval < 0) {
- // println ("(Child) create: File creation error! status: ");
+	/* Generate 300 regular files */
+	int i, retval;
+	for (i = 0; i < 300; i++) {
+		set_pathname_child(pathname, i);
 
- // my_exit(EXIT_FAILURE);
- //     }
+		retval = CREAT (pathname);
 
- //     my_memset (pathname, 0, 80);
- //   }
- // }
+		if (retval < 0) {
+println ("(Child) create: File creation error! status: ");
+
+my_exit(EXIT_FAILURE);
+		}
+
+		my_memset (pathname, 0, 80);
+	}
+	print_fs_in(&(file_system.ins[0]));
+ 
 
 #endif // TEST5
 
-  println("Congratulations, you have passed all tests!!\n");
-
-  return 0;
 }
