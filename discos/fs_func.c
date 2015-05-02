@@ -10,7 +10,7 @@
 
 #define system_init_check() do{if(!system_initialized){rd_reset();}}while(0)
 
-#define inter
+#define nointer
 
 #ifdef inter
 #define disable_interrupt() asm volatile("cli \n\t")
