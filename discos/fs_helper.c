@@ -61,10 +61,12 @@ index_node * get_index_node_at_index(uint16_t index){
 	return &(file_system.ins[index]);
 }
 
+static int afff = 0;
 index_node * get_and_use_next_unused_node(uint16_t * index){
-	for(int i = 0; i < NUM_INDEX_NODE; i ++ ){
+	for(int i = 0; i < NUM_INDEX_NODE; i++){
 		if(file_system.ins[i].assigned == INDEX_NODE_UNUSED){
 			file_system.ins[i].assigned = INDEX_NODE_USED;
+			file_system.sb.sb.num_free_innodes --;
 			*index = i;
 			return &(file_system.ins[i]);
 		}
@@ -74,11 +76,11 @@ index_node * get_and_use_next_unused_node(uint16_t * index){
 }
 
 void reset_index_node(index_node *innode){
-	if(innode->assigned == 0)
+	if(innode->assigned == INDEX_NODE_UNUSED)
 		return;
 	innode->type[0] = '\0';
 	innode->size = 0;
-	innode->assigned = 0;
+	innode->assigned = INDEX_NODE_UNUSED;
 	file_system.sb.sb.num_free_innodes ++;
 }
 
@@ -111,7 +113,7 @@ uint16_t get_next_available_bit(){
 }
 
 int set_bit_map(uint16_t index) {
-	if ( index >= NUM_BYTES_FOR_DIR_ENTRY * BIT_IN_BYTE) {
+	if (index >= NUM_BYTE_FOR_BITMAP * BIT_IN_BYTE) {
 		println("Invalid bit setting index");
 		return  FLAG_ERROR;
 	}
@@ -128,8 +130,8 @@ int set_bit_map(uint16_t index) {
 }
 
 int clear_bit_map(uint16_t index) {
-	if (index >= NUM_BYTES_FOR_DIR_ENTRY * BIT_IN_BYTE) {
-		println("Invalid bit setting index");
+	if (index >= NUM_BYTE_FOR_BITMAP * BIT_IN_BYTE) {
+		println("Invalid bit clearing index");
 		return  FLAG_ERROR;
 	}
 	int offset = index % 8;

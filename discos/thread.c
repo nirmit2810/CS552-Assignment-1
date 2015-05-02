@@ -5,7 +5,7 @@
 #include "fs_debug.h"
 
 //TO BE DELETED
-#include "fs.h"
+#include "randisk_test.c"
 
 static uint32_t stack1[1024];
 //static uint32_t stack2[1024];
@@ -19,7 +19,7 @@ TCB * current_pcb;
 //priority
 int p[4]={0,2,2,3};
 
-static void fs_test1() {
+//static void fs_test1() {
 	//for(int i = 0; i < 8 + 10; i++) {
 	//	for(int j = 0; j < 16; j++) {
 	//		char a [7] = "/usr1/";
@@ -27,21 +27,32 @@ static void fs_test1() {
 	//		rd_mkdir(a);
 	//	}
 	//}
-    //rd_mkdir("/usr")
-	rd_creat("/usr");
-  rd_mkdir("/was");
-   int usr = rd_open("/usr");
-   // rd_open("/sfsd");
-  int was = rd_open("/was");
-  int root= rd_open("/");
-  int root1= rd_open("/");
-  char *b;
-   rd_read(1,b, 10);
-  rd_write(1, b,10);
-  rd_readdir(2,b);
-  rd_readdir(2,b);
-  rd_readdir(2,b);
-  
+  //rd_mkdir("/usr");
+	//print_fs_in(&(file_system.ins[0]));
+	//rd_creat("/usr/bin");
+	//print_fs_in(&(file_system.ins[1]));
+  //rd_creat("/usr/abc");
+	//print_fs_in(&(file_system.ins[1]));
+	//print_fs_in(&(file_system.ins[2]));
+	//print_fs_in(&(file_system.ins[3]));
+	//println("");
+	//rd_unlink("/usr/abc");
+	//print_fs_in(&(file_system.ins[0]));
+	//print_fs_in(&(file_system.ins[1]));
+	//print_fs_in(&(file_system.ins[2]));
+	//print_fs_in(&(file_system.ins[3]));
+	//rd_unlink("/usr/bin");
+	//println("");
+	//print_fs_in(&(file_system.ins[0]));
+	//print_fs_in(&(file_system.ins[1]));
+	//print_fs_in(&(file_system.ins[2]));
+	//print_fs_in(&(file_system.ins[3]));
+	//rd_unlink("/usr");
+	//println("");
+	//print_fs_in(&(file_system.ins[0]));
+	//print_fs_in(&(file_system.ins[1]));
+	//print_fs_in(&(file_system.ins[2]));
+	//print_fs_in(&(file_system.ins[3]));
   //  rd_open("/was");
    // rd_open("/usr");
   //rd_mkdir("/direc");
@@ -101,7 +112,7 @@ static void fs_test1() {
 	//print_fs_in(&(file_system.ins[0]));
 	//print_fs_in(&(file_system.ins[1]));
 	//print_fs_in(&(file_system.ins[2]));
-}
+//}
 
 static void thread1() {
 	int x = 0;

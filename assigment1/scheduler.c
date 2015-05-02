@@ -1,10 +1,10 @@
 #include "thread.h"
 #include "output.h"
+#include "scheduler.h"
 
 static TCB * run_queue[NUM_THREADS];
 static TCB * prior_queue;
 static int current_index = -1;
-int check=0;
 int j=0;
 int prior[NUM_THREADS][2];
 
@@ -16,6 +16,9 @@ void add_to_queue(TCB * tcb){
 			prior[j][1]= tcb->priority[0];
 			run_queue[i] = tcb;
 		    j++;
+			#if dyn==1
+				priority_queue();
+			#endif   
 			return;
 		}
 	}
@@ -143,10 +146,7 @@ TCB * pick_next_in_queue(){
 			}
 		}
 	}
-	if(check==0){
-	check=1;
 	prints("Run queue emptied\n");
-}
 	return NULL;
 
 }

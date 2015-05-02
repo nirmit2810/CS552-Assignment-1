@@ -18,7 +18,7 @@ void rd_reset(){
 	// Setting up Super block
 	// -1 to account for the root node
 	file_system.sb.sb.num_free_blocks = ALLOCATED_NUM_BLOCKS;
-	file_system.sb.sb.num_free_innodes = NUM_INDEX_NODE - 1;
+	file_system.sb.sb.num_free_innodes = NUM_INDEX_NODE;
 	
 	//Clearing Bit Map
 	for(int i = 0; i < NUM_BYTE_FOR_BITMAP; i++) {
@@ -65,8 +65,12 @@ int go_to_target_directory(char * pathname, index_node ** target, char* buffer) 
 		}
 		flag = next_path_in_str(pathname, &position, buffer);
 	}
+<<<<<<< Updated upstream
 	if(flag==FLAG_ERROR)
 	return FLAG_ERROR;
+=======
+
+>>>>>>> Stashed changes
 	*target = directory_node;
 	return FLAG_SUCCESS;
 }
@@ -157,8 +161,8 @@ int rd_open(char *pathname){
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR)
 		return FLAG_ERROR;
-   
-	if(1 && filename_in_directory(buffer, directory_node)){
+
+	if(filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
 	  int inum;
 		inum = entry->index_node_number;
@@ -241,12 +245,6 @@ int rd_read(int fd, char * address, int num_bytes){
 		if(!blkp){
 			break;
 		}
-    
-    //if((fdesp->offset/BLOCK_SIZE) > ((size-1)/BLOCK_SIZE) )
-		//{
-		//	//WHAT??????????
-		//	return num_bytes - bytes_to_read;
-		//}    
       
     int offset = (fdesp->offset ) % BLOCK_SIZE;
 
@@ -257,7 +255,7 @@ int rd_read(int fd, char * address, int num_bytes){
 			bytes_to_read --;
 			fdesp->offset ++;
 			copied ++;
-			if(fdesp->offset >= size)
+			if(bytes_to_read == 0 || fdesp->offset >= size)
 			{
 				return copied;
 			}
@@ -363,8 +361,9 @@ int rd_unlink(char * pathname){
 	file_descriptor fd;
 	char buffer[TEMP_BUFFER_SIZE];
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
-	if(flag == FLAG_ERROR)
+	if(flag == FLAG_ERROR){
 		return flag;
+	}
 
 	if(1 && filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
@@ -384,6 +383,11 @@ int rd_unlink(char * pathname){
 				}
 			}
 			reset_index_node(to_delete_node);
+<<<<<<< Updated upstream
+=======
+			remove_entry_from_parent_directory(entry, directory_node);
+			return FLAG_SUCCESS;
+>>>>>>> Stashed changes
 
 			// Remove from parent directory................ UGHUGH
 			//TODO
@@ -396,8 +400,13 @@ int rd_unlink(char * pathname){
 				return FLAG_ERROR;
 			} else {
 				reset_index_node(to_delete_node);
+<<<<<<< Updated upstream
 				//Delete from parents
 
+=======
+				remove_entry_from_parent_directory(entry, directory_node);
+				return FLAG_SUCCESS;
+>>>>>>> Stashed changes
 			}
 		} else {
 			println("Error: Trying to delete unknown file type");

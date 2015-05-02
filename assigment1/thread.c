@@ -11,7 +11,7 @@ static TCB threads[NUM_THREADS];
 
 static TCB * current_pcb;
 //priority
-int p[4]={2,3,3,0};
+int p[4]={0,2,2,3};
 
 static void thread1() {
 	int x = 0;
@@ -135,9 +135,6 @@ int thread_create( void * stack, void * function, int priority) {
      
      
 	add_to_queue(current_PCB);
-#if dyn==1
-    priority_queue();
-#endif   
 }
 
 void init_thread(void){

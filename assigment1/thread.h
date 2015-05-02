@@ -6,7 +6,7 @@
 #define ESP = 0x0
 
 #define prem 1                                       // prem 1 enables the preemptive version
-#define dyn  0	                            //  dyn 1 enables static scheduling policy
+#define dyn  1	                            //  dyn 1 enables static scheduling policy
 
 typedef enum {
   FALSE,
