@@ -65,12 +65,8 @@ int go_to_target_directory(char * pathname, index_node ** target, char* buffer) 
 		}
 		flag = next_path_in_str(pathname, &position, buffer);
 	}
-<<<<<<< Updated upstream
 	if(flag==FLAG_ERROR)
-	return FLAG_ERROR;
-=======
-
->>>>>>> Stashed changes
+		return FLAG_ERROR;
 	*target = directory_node;
 	return FLAG_SUCCESS;
 }
@@ -383,16 +379,8 @@ int rd_unlink(char * pathname){
 				}
 			}
 			reset_index_node(to_delete_node);
-<<<<<<< Updated upstream
-=======
 			remove_entry_from_parent_directory(entry, directory_node);
 			return FLAG_SUCCESS;
->>>>>>> Stashed changes
-
-			// Remove from parent directory................ UGHUGH
-			//TODO
-
-
 		} else if (strmatch(to_delete_node->type,FILE_TYPE_REG)){
 			//If it's a directory file
 			if( to_delete_node -> size != 0){
@@ -400,13 +388,8 @@ int rd_unlink(char * pathname){
 				return FLAG_ERROR;
 			} else {
 				reset_index_node(to_delete_node);
-<<<<<<< Updated upstream
-				//Delete from parents
-
-=======
 				remove_entry_from_parent_directory(entry, directory_node);
 				return FLAG_SUCCESS;
->>>>>>> Stashed changes
 			}
 		} else {
 			println("Error: Trying to delete unknown file type");
