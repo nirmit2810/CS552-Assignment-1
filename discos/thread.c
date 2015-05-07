@@ -27,8 +27,28 @@ static void fs_test1() {
 	//		rd_mkdir(a);
 	//	}
 	//}
-	rd_creat("/usr/");
-	rd_creat("/usr/cs552");
+    //rd_mkdir("/usr");
+	rd_creat("/usr");
+    rd_creat("/was");
+     rd_open("/usr");
+   // rd_open("/sfsd");
+    rd_open("/was");
+  //  rd_open("/was");
+   // rd_open("/usr");
+    rd_mkdir("/direc");
+    rd_open("/direc");
+   // rd_open("/was");
+  //  rd_close(1);
+     char a[4]="ab3d";
+    rd_write(1,a, 4);
+    char *b;
+    rd_lseek(1,1);
+    rd_read(1,b ,4);
+   // rd_open("/wssf");
+   // rd_open("/was");
+    //rd_creat("/wssf");
+    //rd_open("/wssf");   
+    //rd_open("/usr");
 	//rd_creat("/usr/cs552/123");
 	//rd_mkdir("/usr/cs553");
 	//rd_mkdir("/usr/cs554");
@@ -209,4 +229,85 @@ void exit_thread(){
 	current_pcb->assigned = FALSE;
 	remove_from_queue(current_pcb);
 	schedule();
+}
+void add_to_table(file_descriptor fd1){
+	int i;
+	for(i = 0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
+		if(!current_pcb->fd[i].assigned){
+			current_pcb->fd[i].number = fd1.number;
+			current_pcb->fd[i].index_node_number= fd1.index_node_number;
+			current_pcb->fd[i].offset= fd1.offset;
+			current_pcb->fd[i].assigned= TRUE;
+		       prints("Inserting fd entry with fd= ");
+		       printn(current_pcb->fd[i].number);
+		       prints("inode = ");
+		       printnln(current_pcb->fd[i].index_node_number);
+			return;
+		}
+	}
+	println("Fd table full close some file");
+}
+int check_if_inode_exists(int inode){
+	
+		int i;
+		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
+			if(current_pcb->fd[i].index_node_number == inode){
+				return current_pcb->fd[i].number;
+			}
+		}
+     
+     return FLAG_ERROR;
+	
+
+}
+int delete_from_table(int fd1){
+	
+	
+	int i;
+		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
+			if(current_pcb->fd[i].number == fd1){
+				current_pcb->fd[i].assigned= FALSE;
+				current_pcb->fd[i].number=-1;
+                current_pcb->fd[i].index_node_number=-1;			
+			    return FLAG_SUCCESS;
+			}
+		}
+     
+     return FLAG_ERROR;
+	
+	
+}
+
+
+int check_if_fd_exists(int fd1){
+	
+		int i;
+		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
+			if(current_pcb->fd[i].number == fd1){
+				return FLAG_SUCCESS;
+			}
+		}
+     
+  return FLAG_ERROR;
+	
+
+}
+
+
+file_descriptor * file_descriptor_entry(int fd1){
+
+    file_descriptor *entry;
+    int i;
+
+    for (i = 0; i < MAX_FILE_DESCRIPTOR_NUM; i++)
+    {
+        if(current_pcb->fd[i].number == fd1){
+				entry= &(current_pcb->fd[i]);
+				return entry;
+			}
+		}
+    
+    return NULL;
+
+
 }

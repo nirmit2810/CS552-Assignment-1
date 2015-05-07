@@ -208,7 +208,7 @@ allocated_block_t  * get_last_available_alloc_block(index_node * node){
 
 void clear_block_content(allocated_block_t * blk) {
 	for(int i = 0; i < BLOCK_SIZE; i ++ ){
-	 blk->b.block[i] = 0;
+	 blk->b.block1[i] = 0;
 	}
 }
 

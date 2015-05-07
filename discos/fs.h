@@ -50,7 +50,7 @@
 
 
 typedef struct block_st {
-	uint8_t block[BLOCK_SIZE];
+	uint8_t block1[BLOCK_SIZE];
 } block;
 
 typedef struct superblock_st {

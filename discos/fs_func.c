@@ -1,5 +1,6 @@
 #include "fs_func.h"
 #include "fs_helper.h"
+#include "fs_helper_nir.h"
 #include "fs.h"
 #include "thread.h"
 #include "output.h"
@@ -10,7 +11,7 @@ bool system_initialized = FALSE;
 
 #define system_init_check() do{if(!system_initialized){rd_reset();}}while(0)
 
-
+int current_value=0;
 void rd_reset(){
 
 	prints("File system restting....");
@@ -129,25 +130,193 @@ int rd_mkdir(char *pathname){
 int rd_open(char *pathname){
 	system_init_check();
 
+	index_node * directory_node = NULL;
+	file_descriptor fd;
+	char buffer[TEMP_BUFFER_SIZE];
+	int flag = go_to_target_directory(pathname, & directory_node, buffer);
+	if(flag == FLAG_ERROR)
+		return flag;
+
+	if(1 && filename_in_directory(buffer, directory_node)){
+		
+		entry_dir * entry = filename_in_directory(buffer, directory_node);
+	   int inum;
+        inum = entry->index_node_number;
+        index_node * new_node = get_index_node_at_index(entry->index_node_number);
+        if(strmatch(new_node->type,FILE_TYPE_REG)){
+        int check= check_if_inode_exists(inum);
+        if(check==-1){
+        fd.number= current_value ;
+        fd.index_node_number= inum;
+        fd.offset=0;
+         add_to_table(fd);
+         current_value++;
+	   return fd.number;
+	  }
+	  else{
+	   println("File already open !");	  
+		  return check;
+		  }
+		  }
+		else{
+		println("Cannot open a directory");
+		return FLAG_ERROR;	
+		}  
+	} else {
+		println("Error: File doesn't  exists");
+		return FLAG_ERROR;
+	}
 }
 
 int rd_close(int fd){
 	system_init_check();
+    int x = delete_from_table(fd);
+    if(x==0){
+	return FLAG_SUCCESS;
+	}
+	
+	if(x==-1){
+	println("Error: Fd doesn't exist in the file descriptor table ");	
+	return FLAG_ERROR;
+	}
 
 }
 
 int rd_read(int fd, char * address, int num_bytes){
 	system_init_check();
+ 
+     if (check_if_fd_exists(fd) == -1)
+    {
+        println("The given fd does not exist in the file descriptor table.");
+        return FLAG_ERROR;
+    }
+    
+    file_descriptor * fdesp=NULL;
+    fdesp = file_descriptor_entry(fd);
+    if(fdesp==NULL){ 
+		return FLAG_ERROR;	 
+	}
+    int bytes_to_read = num_bytes;
+    int  copied =0;
+    allocated_block_t *blkp=NULL;
+    //blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+    
+    int size;
+       while(bytes_to_read > 0){
+	
+		size= get_inode_size_at_inode_index(fdesp->index_node_number);	 
+	
+		if(size==0){
+     	 return 0;	  
+	   }  
+    
+       blkp = get_alloc_block_with_num(get_index_node_at_index(fdesp->index_node_number), (fdesp->offset )/BLOCK_SIZE);
+    
+     if((fdesp->offset/BLOCK_SIZE)> ((size-1)/BLOCK_SIZE) )
+	{
+	  return num_bytes - bytes_to_read;
+	}    
+      
+      int offset = (fdesp->offset )%BLOCK_SIZE;
 
+      for(int i=offset;i<BLOCK_SIZE;i++)
+	{
+	  *((unsigned char *) address++) = *((unsigned char *)blkp->b.block1 + i);
+	  terminal_putchar(*(((unsigned char *) address) -1));
+	  bytes_to_read--;
+	  fdesp->offset ++;
+	  copied++;
+	  if(fdesp->offset > (size-1) )
+	    {
+	      return num_bytes - bytes_to_read;
+	    }
+	  if(bytes_to_read == 0)
+	    return copied;
+	}
+    }
 }
 
 int rd_write(int fd, char * address, int num_bytes){
 	system_init_check();
+ 
+     if (check_if_fd_exists(fd) == -1)
+    {
+        println("The given fd does not exist in the file descriptor table.");
+        return FLAG_ERROR;
+    }
+    
+    file_descriptor * fdesp=NULL;
+    fdesp = file_descriptor_entry(fd);
+    if(fdesp==NULL){ 
+		return FLAG_ERROR;	 
+	}
+    int bytes_to_copy = num_bytes;
+    int copied=0;
+	allocated_block_t *blkp=NULL;
+    blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+    int size;
+    while(bytes_to_copy > 0){
+		
+         size= get_inode_size_at_inode_index(fdesp->index_node_number);
+                 
+         if(((fdesp->offset/BLOCK_SIZE)> (size-1)/BLOCK_SIZE) && size != 0){     	   
+         blkp = get_last_available_alloc_block(get_index_node_at_index(fdesp->index_node_number));
+        if(blkp==NULL){
+		return copied;
+			}
+		 }         		
+		
+		 int offset= fdesp->offset%256;
+         
+        
+		for(int i=offset;i<BLOCK_SIZE;i++)
+		{
+		*((unsigned char *) blkp->b.block1 + i) = *((unsigned char *) address++);
+		terminal_putchar(*((unsigned char *) blkp->b.block1 + i));
+		copied++;
+		bytes_to_copy --;
+		fdesp->offset ++;
+		if(fdesp->offset > size ){
+			  set_inode_size_at_inode_index(fdesp->index_node_number,1);
+			 size=get_inode_size_at_inode_index(fdesp->index_node_number);
+		}
+        if(bytes_to_copy == 0){
+			return copied;
+		}
+	}
+	}
+     
+     
 
 }
 
 int rd_lseek(int fd, int offset){
 	system_init_check();
+     if (check_if_fd_exists(fd) == -1)
+    {
+        println("The given fd does not exist in the file descriptor table.");
+        return FLAG_ERROR;
+    }
+    
+    file_descriptor * fdesp=NULL;
+    fdesp = file_descriptor_entry(fd);
+    if(fdesp==NULL){ 
+		return FLAG_ERROR;	 
+	}
+   
+   int  size = get_inode_size_at_inode_index(fdesp->index_node_number);
+  
+   if(offset > size-1)
+    {
+	   
+      println("Offset is greater than the file size");
+      return FLAG_ERROR;
+    }
+  else
+    {
+      fdesp->offset= offset;
+      return FLAG_SUCCESS;
+    }
 
 }
 
