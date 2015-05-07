@@ -65,6 +65,8 @@ int go_to_target_directory(char * pathname, index_node ** target, char* buffer) 
 		}
 		flag = next_path_in_str(pathname, &position, buffer);
 	}
+	if(flag==FLAG_ERROR)
+	return FLAG_ERROR;
 	*target = directory_node;
 	return FLAG_SUCCESS;
 }
@@ -132,11 +134,30 @@ int rd_open(char *pathname){
 
 	index_node * directory_node = NULL;
 	file_descriptor fd;
+	int root=0;
 	char buffer[TEMP_BUFFER_SIZE];
+	 if(strmatch(pathname,"/")){
+		  root=1;
+		}
+	if(root==1){
+		int rcheck= check_if_inode_exists(0);
+			if(rcheck == FLAG_ERROR){
+				fd.number = current_value;
+				fd.index_node_number = 0;
+				fd.offset = 0;
+				add_to_table(fd);
+				current_value++;
+				return fd.number;
+			}
+			else{
+				println("Root already open !");	  
+				return rcheck;
+			}
+		}	
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR)
-		return flag;
-
+		return FLAG_ERROR;
+   
 	if(1 && filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
 	  int inum;
@@ -191,6 +212,13 @@ int rd_read(int fd, char * address, int num_bytes){
 			println("The given fd does not exist in the file descriptor table.");
 			return FLAG_ERROR;
 	}
+	 index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
+        if(strmatch(new_node->type,FILE_TYPE_DIR)){
+			
+			println("Cannot read a directory");
+			return FLAG_ERROR;
+		
+		}
 	
   int bytes_to_read = num_bytes;
   int copied = 0;
@@ -249,7 +277,15 @@ int rd_write(int fd, char * address, int num_bytes){
 			println("The given fd does not exist in the file descriptor table.");
 			return FLAG_ERROR;
 	}
-
+   
+     index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
+        if(strmatch(new_node->type,FILE_TYPE_DIR)){
+			
+			println("Cannot write a directory");
+			return FLAG_ERROR;
+		
+		}
+	
 	int bytes_to_copy = num_bytes;
 	int copied = 0;
 	uint16_t index_node_number = fdesp -> index_node_number;
@@ -285,6 +321,7 @@ int rd_write(int fd, char * address, int num_bytes){
 				size = innode->size;
 			}
 			if(bytes_to_copy == 0){
+				
 				return copied;
 			}
 		}
@@ -347,16 +384,20 @@ int rd_unlink(char * pathname){
 				}
 			}
 			reset_index_node(to_delete_node);
-			remove_entry_from_parent_directory(entry, directory_node);
 
-		} else if (strmatch(to_delete_node->type,FILE_TYPE_DIR)){
+			// Remove from parent directory................ UGHUGH
+			//TODO
+
+
+		} else if (strmatch(to_delete_node->type,FILE_TYPE_REG)){
 			//If it's a directory file
 			if( to_delete_node -> size != 0){
 				println("Cannnot delete non-empty directory");
 				return FLAG_ERROR;
 			} else {
 				reset_index_node(to_delete_node);
-				remove_entry_from_parent_directory(entry, directory_node);
+				//Delete from parents
+
 			}
 		} else {
 			println("Error: Trying to delete unknown file type");
@@ -372,6 +413,43 @@ int rd_unlink(char * pathname){
 
 int rd_readdir(int fd, char * address){
 	system_init_check();
+   
+   file_descriptor * fdesp = NULL;
+	fdesp = file_descriptor_entry(fd);
+
+	if (fdesp == NULL)
+	{
+			println("The given fd does not exist in the file descriptor table.");
+			return FLAG_ERROR;
+	}
+   
+     index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
+        if(strmatch(new_node->type,FILE_TYPE_REG)){
+			
+			println("rd_readdir can only be applied to Directories");
+			return FLAG_ERROR;
+		
+		}
+	int next_entry_index = fdesp->offset;
+	entry_dir * curr_entry;
+	curr_entry = walk_along_directory_entry(get_index_node_at_index(fdesp->index_node_number), &next_entry_index);
+	if(curr_entry==NULL){
+	println("No more entries left in the directory");
+	return 0;
+	}
+  *((unsigned short *)address) = curr_entry->index_node_number;
+    strcpy_b((char *) address +2  ,curr_entry->filename,DIR_FILENAME_SIZE);
+	
+		printn(*(uint16_t *)address);
+		
+		for(int i=2;i<16; i++){
+	   terminal_putchar( *(address +i));
+      }
+      println(" ");
+	fdesp->offset+=1;	
+	return FLAG_DONE;
+   
+
 
 }
 

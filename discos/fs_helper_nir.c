@@ -23,7 +23,7 @@ void set_inode_size_at_inode_index(uint16_t index, uint16_t size1){
 int check_if_inode_exists(int inode){
 		int i;
 		for(int i =0; i < MAX_FILE_DESCRIPTOR_NUM; i ++) {
-			if(current_pcb->fd[i].index_node_number == inode){
+			if(current_pcb->fd[i].index_node_number == inode && current_pcb->fd[i].assigned){
 				return current_pcb->fd[i].number;
 			}
 		}
