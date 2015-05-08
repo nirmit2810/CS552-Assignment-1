@@ -22,13 +22,14 @@
 #endif
 
 //#define return enable_interrupt();return
-		
 
-int current_value=0;
+
+int current_value=0;  // We use for giving a unique Fd value in the file descriptor table
 
 int rd_creat(char * pathname){
 	disable_interrupt();
 	system_init_check();
+	//checking the super block for the available number of blocks, if not free blocks or inode return an error
 	if(file_system.sb.sb.num_free_blocks == 0 || file_system.sb.sb.num_free_innodes == 0){
 		println("Can't create new file. Full");
 		return FLAG_ERROR;
@@ -39,7 +40,7 @@ int rd_creat(char * pathname){
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR)
 		return flag;
-
+    //Check if the file already exists
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: File already exists");
 		return FLAG_ERROR;
@@ -71,11 +72,12 @@ int rd_mkdir(char *pathname){
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR)
 		return flag;
-
+    //Check if filename already exists
 	if(1 && filename_in_directory(buffer, directory_node)){
 		println("Error: Directory already exists");
 		return FLAG_ERROR;
 	} else {
+	    //Allocate the inode and entry for the directory
 		uint16_t new_node_index = -1;
 		index_node * new_index_node = get_and_use_next_unused_node(&new_node_index);
 		strcpy_b(new_index_node->type, FILE_TYPE_DIR, 4);
@@ -97,10 +99,12 @@ int rd_open(char *pathname){
 	file_descriptor fd;
 	int root=0;
 	char buffer[TEMP_BUFFER_SIZE];
+	//check if the open file is a root file
 	 if(strmatch(pathname,"/")){
 		  root=1;
 		}
 	if(root==1){
+    //check if the root is already open
 		int rcheck= check_if_inode_exists(0);
 			if(rcheck == FLAG_ERROR){
 				fd.number = current_value;
@@ -111,20 +115,21 @@ int rd_open(char *pathname){
 				return fd.number;
 			}
 			else{
-				println("Root already open !");	  
+				println("Root already open !");
 				return rcheck;
 			}
-		}	
+		}
 	int flag = go_to_target_directory(pathname, & directory_node, buffer);
 	if(flag == FLAG_ERROR)
 		return FLAG_ERROR;
-
+      //check if the file exists
 	if(filename_in_directory(buffer, directory_node)){
 		entry_dir * entry = filename_in_directory(buffer, directory_node);
 	  int inum;
 		inum = entry->index_node_number;
 		index_node * new_node = get_index_node_at_index(entry->index_node_number);
 		if(strmatch(new_node->type,FILE_TYPE_REG) || strmatch(new_node->type,FILE_TYPE_DIR)){
+			//check if the inode exists already in the descriptor table
 			int check= check_if_inode_exists(inum);
 			if(check == FLAG_ERROR){
 				fd.number = current_value;
@@ -135,14 +140,14 @@ int rd_open(char *pathname){
 				return fd.number;
 			}
 			else{
-				println("File already open !");	  
+				println("File already open !");
 				return check;
 			}
 		}
 		else{
 			println("Opening file of unkown file type");
-			return FLAG_ERROR;	
-		}  
+			return FLAG_ERROR;
+		}
 	} else {
 			println("Error: File doesn't  exists");
 			return FLAG_ERROR;
@@ -157,9 +162,9 @@ int rd_close(int fd){
 	if(x == 0){
 		return FLAG_SUCCESS;
 	}
-	
+
 	if(x == FLAG_ERROR){
-		println("Error: Fd doesn't exist in the file descriptor table ");	
+		println("Error: Fd doesn't exist in the file descriptor table ");
 		return FLAG_ERROR;
 	}
 	return FLAG_SUCCESS;
@@ -168,10 +173,10 @@ int rd_close(int fd){
 int rd_read(int fd, char * address, int num_bytes){
 	disable_interrupt();
 	system_init_check();
- 
+
 	file_descriptor * fdesp = NULL;
 	fdesp = file_descriptor_entry(fd);
-
+    //check if the fd exists in the file descriptor table
 	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
@@ -179,12 +184,12 @@ int rd_read(int fd, char * address, int num_bytes){
 	}
 	 index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
         if(strmatch(new_node->type,FILE_TYPE_DIR)){
-			
+
 			println("Cannot read a directory");
 			return FLAG_ERROR;
-		
+
 		}
-	
+
   int bytes_to_read = num_bytes;
   int copied = 0;
   allocated_block_t * blkp = NULL;
@@ -195,22 +200,22 @@ int rd_read(int fd, char * address, int num_bytes){
   int size = 0;
 	while(bytes_to_read > 0){
 
-		size = innode->size;	 
+		size = innode->size;
 
     if(fdesp->offset >= size){
 			break;
 		}
-    
+    //allocate the block to read
     blkp = get_alloc_block_with_num(innode, (fdesp->offset)/BLOCK_SIZE);
 
 		if(!blkp){
 			break;
 		}
-      
+
     int offset = (fdesp->offset ) % BLOCK_SIZE;
 
     for(int i = offset; i < BLOCK_SIZE; i++)
-		{
+		{   //read byte by byte
 			*((unsigned char *) address++) = *((unsigned char *)blkp->b.block1 + i);
 			//terminal_putchar(*(((unsigned char *) address) -1));
 			bytes_to_read --;
@@ -228,24 +233,25 @@ int rd_read(int fd, char * address, int num_bytes){
 int rd_write(int fd, char * address, int num_bytes){
 	disable_interrupt();
 	system_init_check();
-	
-	file_descriptor * fdesp = NULL;
-	fdesp = file_descriptor_entry(fd);
 
+	file_descriptor * fdesp = NULL;
+
+	fdesp = file_descriptor_entry(fd);
+    //check if the fd exists in the descriptor table
 	if (fdesp == NULL)
 	{
 			println("The given fd does not exist in the file descriptor table.");
 			return FLAG_ERROR;
 	}
-   
+
      index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
         if(strmatch(new_node->type,FILE_TYPE_DIR)){
-			
+
 			println("Cannot write a directory");
 			return FLAG_ERROR;
-		
+
 		}
-	
+
 	int bytes_to_copy = num_bytes;
 	int copied = 0;
 	uint16_t index_node_number = fdesp -> index_node_number;
@@ -256,13 +262,14 @@ int rd_write(int fd, char * address, int num_bytes){
 	while(bytes_to_copy > 0){
 		//Updating size of index node
 		size = innode->size;
+		//allocate blocks as necessary
 		blkp = get_alloc_block_with_num(innode, fdesp->offset / BLOCK_SIZE);
 		if(!blkp){
 			return copied;
 		}
-	
+
 	  int offset = fdesp->offset % BLOCK_SIZE;
-        
+
 		for(int i = offset; i < BLOCK_SIZE; i++)
 	{
 			blkp->b.block1[i] = *(address++);
@@ -296,9 +303,9 @@ int rd_lseek(int fd, int offset){
 			println("The given fd does not exist in the file descriptor table.");
 			return FLAG_ERROR;
 	}
-   
+
   int size = innode->size;
-  
+
 	if(offset >= size)
   {
 		println("Offset is greater than the file size");
@@ -365,7 +372,7 @@ int rd_unlink(char * pathname){
 int rd_readdir(int fd, char * address){
 	enable_interrupt();
 	system_init_check();
-   
+
   file_descriptor * fdesp = NULL;
 	fdesp = file_descriptor_entry(fd);
 
@@ -376,6 +383,7 @@ int rd_readdir(int fd, char * address){
 	}
 
 	index_node * new_node = get_index_node_at_index(fdesp->index_node_number);
+	//check if its a directory
 	if(strmatch(new_node->type,FILE_TYPE_REG)){
 		println("rd_readdir can only be applied to Directories");
 		return FLAG_ERROR;
@@ -391,17 +399,8 @@ int rd_readdir(int fd, char * address){
 	entry_dir * entry = (entry_dir *)address;
 	entry->index_node_number = curr_entry->index_node_number;
 	strcpy_b(entry->filename, curr_entry->filename, DIR_FILENAME_SIZE);
-    //strcpy_b((char *) address  ,curr_entry->filename,DIR_FILENAME_SIZE);
-  //*((unsigned short *)address + 14) = (curr_entry->index_node_number)>>8;
-  //*((unsigned short *)address + 14) = curr_entry->index_node_number;
-	
-//		printn(*(uint16_t *)address);
-//		
-//		for(int i=2;i<16; i++){
-//	   terminal_putchar( *(address +i));
-//      }
-//      println(" ");
-	fdesp->offset++;	
+
+	fdesp->offset++;
 	return FLAG_DONE;
 }
 
