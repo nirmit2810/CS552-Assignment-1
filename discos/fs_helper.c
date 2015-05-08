@@ -205,7 +205,13 @@ allocated_block_t * get_alloc_block_with_num(index_node * node, int num) {
 		println("Erorr: Trying to access memory outside the size of node");
 		return NULL;
 	}
-	return *(get_alloc_block_ptr_with_num(node, num));
+	allocated_block_t ** result = (get_alloc_block_ptr_with_num(node, num));
+	if(result!=NULL){
+	return *result;
+	}
+	else{
+    return NULL;
+	}	
 }
 allocated_block_t  * get_last_available_alloc_block(index_node * node){
 	uint32_t file_size = node->size;

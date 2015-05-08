@@ -1,6 +1,8 @@
 #include "fs_func.h"
 #include "output.h"
-
+#include "fs_helper.h"
+#include "fs_helper_nir.h"
+#include "thread.h"
  /*
    -- template test file for RAMDISK Filesystem Assignment.
    -- include a case for:
@@ -17,9 +19,9 @@
 // #define's to control what tests are performed,
 // comment out a test if you do not wish to perform it
 
-#define TEST1
+//#define TEST1
 #define TEST2
-#define TEST3
+//#define TEST3
 //#define TEST4
 //#define TEST5
 
@@ -74,7 +76,7 @@ static char pathname[80];
 
 static char data1[DIRECT*BLK_SZ]; /* Largest data directly accessible */
 static char data2[PTRS_PB*BLK_SZ];     /* Single indirect data size */
-static char data3[PTRS_PB*PTRS_PB*BLK_SZ]; /* Double indirect data size */
+static char data3[PTRS_PB*PTRS_PB*BLK_SZ+1]; /* Double indirect data size */
 static char addr[PTRS_PB*PTRS_PB*BLK_SZ+1]; /* Scratchpad memory */
 
 void my_memset(void * b, char c, int len)
@@ -198,7 +200,7 @@ int fs_test1 () {
 
   /* Try writing to all direct data blocks */
   retval = WRITE (fd, data1, sizeof(data1));
-
+  printnln(get_inode_size_at_inode_index(1));
   if (retval < 0) {
     println ("write: File write STAGE1 error! status");
 
@@ -209,7 +211,7 @@ int fs_test1 () {
 
   /* Try writing to all single-indirect data blocks */
   retval = WRITE (fd, data2, sizeof(data2));
-
+   printnln(get_inode_size_at_inode_index(1));
   if (retval < 0) {
     println ("write: File write STAGE2 error! status: ");
 
@@ -220,7 +222,7 @@ int fs_test1 () {
 
   /* Try writing to all double-indirect data blocks */
   retval = WRITE (fd, data3, sizeof(data3));
-
+   printnln(get_inode_size_at_inode_index(1));
   if (retval < 0) {
     println ("write: File write STAGE3 error! status: ");
 

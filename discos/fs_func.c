@@ -298,13 +298,14 @@ int rd_write(int fd, char * address, int num_bytes){
 		//	}
 		//}         		
 		blkp = get_alloc_block_with_num(innode, fdesp->offset / BLOCK_SIZE);
-		if(!blkp)
-			return copied;
+		if(!blkp){
+	        return copied;
+	}
 	
 	  int offset = fdesp->offset % BLOCK_SIZE;
         
 		for(int i = offset; i < BLOCK_SIZE; i++)
-		{
+	{
 			*((unsigned char *) blkp->b.block1 + i) = *((unsigned char *) address++);
 			//terminal_putchar(*((unsigned char *) blkp->b.block1 + i));
 			copied++;
