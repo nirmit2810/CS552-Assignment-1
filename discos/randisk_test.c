@@ -19,11 +19,11 @@
 // #define's to control what tests are performed,
 // comment out a test if you do not wish to perform it
 
-//#define TEST1
-//#define TEST2
-//#define TEST3
-//#define TEST4
-#define TEST5
+#define TEST1
+#define TEST2
+#define TEST3
+#define TEST4
+//#define TEST5
 
 
 #define USE_RAMDISK
@@ -459,6 +459,8 @@ my_exit(EXIT_FAILURE);
 
 		my_memset (pathname, 0, 80);
 	}
+	print_fs_in(&(file_system.ins[0]));
+	println("");
 
 #endif // TEST5
   return 0;
@@ -486,6 +488,7 @@ my_exit(EXIT_FAILURE);
 		my_memset (pathname, 0, 80);
 	}
 	print_fs_in(&(file_system.ins[0]));
+	println("");
  
 
 #endif // TEST5
